@@ -128,10 +128,10 @@ export default function ReceptionDashboard() {
         />
       </div>
 
-      <div className="relative z-10 flex flex-col min-h-screen">
+      <div className="relative z-10 flex flex-col min-h-screen pb-28 md:pb-0">
         <SmartNavbar active="reception" badge="Reception Desk" />
 
-      <main className="flex-1 flex flex-col lg:flex-row px-6 py-8 gap-8 max-w-6xl mx-auto w-full">
+      <main className="flex-1 flex flex-col lg:flex-row px-4 md:px-6 py-6 md:py-8 gap-8 max-w-6xl mx-auto w-full">
         
         {/* Left Side: Form */}
         <div className="w-full lg:max-w-md">

@@ -52,7 +52,7 @@ export default function DoctorRegisterPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#09090b] flex items-center justify-center px-4 relative overflow-hidden">
+    <div className="min-h-screen bg-[#09090b] flex items-center justify-center px-4 py-8 pb-28 md:pb-8 relative overflow-hidden">
       <LaserFlow />
       
       <div className="w-full max-w-lg relative z-10">
@@ -64,7 +64,7 @@ export default function DoctorRegisterPage() {
           <p className="text-zinc-500 text-sm mt-1 font-medium">Join the Medical Personnel Network</p>
         </div>
 
-        <div className="bg-[#111113]/80 backdrop-blur-xl border border-[#27272a] rounded-3xl p-10 shadow-2xl relative">
+        <div className="bg-[#111113]/80 backdrop-blur-xl border border-[#27272a] rounded-3xl p-6 md:p-10 shadow-2xl relative">
           
           {step === 1 && (
             <div className="space-y-6">
@@ -115,7 +115,7 @@ export default function DoctorRegisterPage() {
               </div>
 
               <div className="space-y-4">
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
                     <label className="block text-[11px] font-black uppercase tracking-widest text-zinc-500 mb-2 ml-1">Specialization</label>
                     <input

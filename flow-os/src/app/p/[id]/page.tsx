@@ -100,10 +100,10 @@ export default function PatientTracker() {
   const isInCabin = patient.status === "IN_CABIN";
 
   return (
-    <div className="min-h-screen bg-[#09090b] text-white flex flex-col font-sans">
+    <div className="min-h-screen bg-[#09090b] text-white flex flex-col font-sans pb-28 md:pb-0">
       <SmartNavbar badge="Live Tracker" />
 
-      <main className="flex-1 overflow-y-auto px-4 py-6 flex flex-col items-center w-full max-w-md mx-auto gap-4">
+      <main className="flex-1 overflow-y-auto px-4 py-4 md:py-6 flex flex-col items-center w-full max-w-md mx-auto gap-3 md:gap-4">
 
         {/* ===== COMPLETED STATE ===== */}
         <AnimatePresence mode="wait">

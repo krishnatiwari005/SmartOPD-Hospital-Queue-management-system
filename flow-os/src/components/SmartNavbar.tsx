@@ -1,59 +1,101 @@
 "use client";
 
 import Link from "next/link";
-import { Activity, Home, LayoutDashboard, User } from "lucide-react";
+import { usePathname } from "next/navigation";
+import { Activity, Home, LayoutDashboard, UserPlus } from "lucide-react";
+import { motion } from "framer-motion";
 
 interface SmartNavbarProps {
   active?: "reception" | "admin" | "doctor" | "display" | "patient";
-  badge?: string; // optional badge like the doctor name
-  extra?: React.ReactNode; // extra right-side elements
+  badge?: string; 
+  extra?: React.ReactNode; 
 }
 
 export default function SmartNavbar({ active, badge, extra }: SmartNavbarProps) {
+  const pathname = usePathname();
+  
   const links = [
-    { href: "/", label: "Reception Desk", key: "reception", icon: Home },
-    { href: "/doctor/register", label: "Doctor Sign Up", key: "doctor-reg", icon: User },
-    { href: "/doctor/login", label: "Doctor Portal", key: "doctor", icon: LayoutDashboard },
+    { href: "/", label: "Reception", key: "reception", icon: Home },
+    { href: "/doctor/register", label: "Sign Up", key: "doctor-reg", icon: UserPlus },
+    { href: "/doctor/login", label: "Doctor", key: "doctor", icon: LayoutDashboard },
   ];
 
   return (
-    <nav className="border-b border-[#1e1e22] px-6 py-4 flex items-center justify-between bg-[#09090b]/90 backdrop-blur-md sticky top-0 z-50">
-      {/* Logo + Brand */}
-      <div className="flex items-center gap-4">
-        <Link href="/" className="flex items-center gap-2.5 group">
-          <Activity className="w-5 h-5 text-emerald-500" />
-          <span className="text-[16px] font-bold tracking-tight text-white">SmartOPD</span>
-        </Link>
-
-        {badge && (
-          <span className="text-[11px] font-semibold bg-emerald-500/10 text-emerald-400 px-2 py-0.5 rounded tracking-wider uppercase border border-emerald-500/20">
-            {badge}
-          </span>
-        )}
-      </div>
-
-      {/* Center Nav Links */}
-      <div className="hidden md:flex items-center gap-1">
-        {links.map(({ href, label, key, icon: Icon }) => (
-          <Link
-            key={key}
-            href={href}
-            className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-[13px] font-semibold transition-all ${
-              active === key
-                ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20"
-                : "text-zinc-400 hover:text-white hover:bg-[#18181b]"
-            }`}
-          >
-            <Icon className="w-4 h-4" />
-            {label}
+    <>
+      {/* 🟢 TOP NAV (Branding & Extra) */}
+      <nav className="border-b border-[#1e1e22] px-4 md:px-6 py-4 flex items-center justify-between bg-[#09090b]/90 backdrop-blur-xl sticky top-0 z-50">
+        <div className="flex items-center gap-3">
+          <Link href="/" className="flex items-center gap-2 group">
+            <Activity className="w-5 h-5 text-emerald-500" />
+            <span className="text-[17px] font-black tracking-tight text-white">SmartOPD</span>
           </Link>
-        ))}
-      </div>
 
-      {/* Right side extras */}
-      <div className="flex items-center gap-3">
-        {extra}
+          {badge && (
+            <span className="hidden sm:inline-flex text-[10px] font-bold bg-emerald-500/10 text-emerald-500 px-2.5 py-1 rounded-full tracking-widest uppercase border border-emerald-500/20 shadow-[0_0_15px_rgba(16,185,129,0.1)]">
+              {badge}
+            </span>
+          )}
+        </div>
+
+        {/* Desktop Links (Hidden on Mobile) */}
+        <div className="hidden md:flex items-center gap-1 bg-[#111113] p-1 rounded-xl border border-[#27272a]">
+          {links.map(({ href, label, key, icon: Icon }) => {
+            const isActive = active === key || pathname === href;
+            return (
+              <Link
+                key={key}
+                href={href}
+                className={`relative flex items-center gap-2 px-4 py-2 rounded-lg text-[13px] font-bold transition-all ${
+                  isActive ? "text-emerald-400" : "text-zinc-500 hover:text-zinc-300"
+                }`}
+              >
+                {isActive && (
+                  <motion.div
+                    layoutId="desktop-nav"
+                    className="absolute inset-0 bg-emerald-500/10 border border-emerald-500/20 rounded-lg"
+                    transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
+                  />
+                )}
+                <Icon className="w-4 h-4 relative z-10" />
+                <span className="relative z-10">{label}</span>
+              </Link>
+            );
+          })}
+        </div>
+
+        {/* Right side extras */}
+        <div className="flex items-center gap-3">
+          {extra}
+        </div>
+      </nav>
+
+      {/* 📱 MOBILE BOTTOM NAV (Hidden on Desktop) */}
+      <div className="md:hidden fixed bottom-0 left-0 right-0 z-50 px-4 pb-6 pt-2 bg-gradient-to-t from-[#09090b] via-[#09090b]/95 to-transparent pointer-events-none">
+        <div className="flex items-center justify-around bg-[#111113]/90 backdrop-blur-2xl border border-[#27272a] p-2 rounded-2xl shadow-[0_-10px_40px_rgba(0,0,0,0.5)] pointer-events-auto">
+          {links.map(({ href, label, icon: Icon }) => {
+            const isActive = pathname === href;
+            return (
+              <Link
+                key={href}
+                href={href}
+                className={`flex flex-col items-center gap-1 px-5 py-2.5 rounded-xl transition-all relative ${
+                  isActive ? "text-emerald-400" : "text-zinc-500"
+                }`}
+              >
+                {isActive && (
+                  <motion.div
+                    layoutId="mobile-nav"
+                    className="absolute inset-0 bg-emerald-500/10 rounded-xl"
+                    transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
+                  />
+                )}
+                <Icon className={`w-5 h-5 relative z-10 ${isActive ? "animate-pulse" : ""}`} />
+                <span className="text-[10px] font-extrabold uppercase tracking-widest relative z-10">{label}</span>
+              </Link>
+            );
+          })}
+        </div>
       </div>
-    </nav>
+    </>
   );
 }

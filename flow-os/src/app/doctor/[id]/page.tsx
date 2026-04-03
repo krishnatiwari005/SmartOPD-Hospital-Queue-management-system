@@ -140,24 +140,24 @@ export default function DoctorConsole() {
         />
       </div>
 
-      <div className="relative z-10 flex flex-col min-h-screen">
+      <div className="relative z-10 flex flex-col min-h-screen pb-28 md:pb-0">
         <SmartNavbar active="doctor" badge="Doctor Console" extra={
           <div className="flex items-center gap-4">
             <div className="text-right text-sm">
               <p className="text-[11px] text-zinc-500 uppercase tracking-widest font-bold">Avg Speed</p>
               <p className="font-bold text-emerald-400">{Math.round(doctor.averageConsultationTimeMs / 60000)}m / patient</p>
             </div>
-            <a href={`/display/${id}`} target="_blank" className="text-[12px] font-bold text-zinc-400 hover:text-white border border-[#27272a] px-3 py-1.5 rounded-lg hover:bg-[#18181b] transition-colors">
+            <a href={`/display/${id}`} target="_blank" className="hidden sm:flex text-[12px] font-bold text-zinc-400 hover:text-white border border-[#27272a] px-3 py-1.5 rounded-lg hover:bg-[#18181b] transition-colors">
               TV Display →
             </a>
           </div>
         } />
 
-        <main className="flex-1 flex px-6 py-6 gap-6 max-w-[1400px] mx-auto w-full">
+        <main className="flex-1 flex flex-col md:flex-row px-4 md:px-6 py-4 md:py-6 gap-4 md:gap-6 max-w-[1400px] mx-auto w-full">
         
         {/* Left Side: Active Session Control */}
         <div className="flex-[2] flex flex-col gap-6">
-          <div className="card p-8 flex flex-col items-center justify-center text-center min-h-[400px] bg-gradient-to-b from-[#111113] to-[#09090b] border-[#27272a] relative overflow-hidden">
+          <div className="card p-5 md:p-8 flex flex-col items-center justify-center text-center min-h-[280px] md:min-h-[400px] bg-gradient-to-b from-[#111113] to-[#09090b] border-[#27272a] relative overflow-hidden">
             
             {/* Dynamic Background Glow */}
             <div className={`absolute top-0 left-1/2 -translate-x-1/2 w-96 h-96 blur-[100px] pointer-events-none rounded-full opacity-20 ${inCabin ? 'bg-emerald-500' : 'bg-zinc-500'}`} />
@@ -182,14 +182,14 @@ export default function DoctorConsole() {
                     </span>
                   </div>
 
-                  <h1 className="text-5xl font-black tracking-tight mb-2 w-full truncate px-4">
+                  <h1 className="text-3xl md:text-5xl font-black tracking-tight mb-2 w-full truncate px-4">
                     {inCabin.name}
                   </h1>
                   <p className="text-zinc-500 font-medium mb-12 flex items-center gap-2">
                     <User className="w-4 h-4" /> {inCabin.phone}
                   </p>
 
-                  <div className="flex items-center justify-center gap-4 w-full px-10">
+                  <div className="flex items-center justify-center gap-3 w-full px-4 md:px-10">
                     <button
                       onClick={handleSkip}
                       disabled={actionLoading}
@@ -253,7 +253,7 @@ export default function DoctorConsole() {
         </div>
 
         {/* Right Side: Virtual Queue */}
-        <div className="flex-1 flex flex-col items-stretch card p-0 border-[#27272a] overflow-hidden max-h-[800px]">
+        <div className="flex-1 flex flex-col items-stretch card p-0 border-[#27272a] overflow-hidden max-h-[400px] md:max-h-[800px]">
           <div className="p-5 border-b border-[#1e1e22] bg-[#111113] flex items-center justify-between sticky top-0">
              <h2 className="text-[13px] font-bold text-zinc-100 uppercase tracking-widest flex items-center gap-2">
                <Users className="w-4 h-4 text-emerald-500" />
