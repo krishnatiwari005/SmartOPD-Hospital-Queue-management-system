@@ -1,0 +1,331 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+"use client";
+
+import { useState, useEffect, useCallback } from "react";
+import { useParams, useRouter } from "next/navigation";
+import { User, CheckCircle2, ChevronRight, RefreshCw, Monitor, Users } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import SmartNavbar from "@/components/SmartNavbar";
+import LaserFlow from "@/components/LaserFlow";
+
+export default function DoctorConsole() {
+  const router = useRouter();
+  const params = useParams();
+  const id = params.id as string;
+
+  const [doctor, setDoctor] = useState<any>(null);
+  const [inCabin, setInCabin] = useState<any>(null);
+  const [upNext, setUpNext] = useState<any>(null);
+  const [queue, setQueue] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [actionLoading, setActionLoading] = useState(false);
+  const [isAuthorized, setIsAuthorized] = useState(false);
+
+  const fetchDoctorState = useCallback(async () => {
+    try {
+      const res = await fetch(`/api/doctor/${id}`);
+      const data = await res.json();
+      if (data.success) {
+        setDoctor(data.doctor);
+        setInCabin(data.inCabin);
+        setUpNext(data.upNext);
+        setQueue(data.queueDetails || []);
+      }
+    } finally {
+      setLoading(false);
+    }
+  }, [id]);
+
+  // Initial load + auth check + auto-refresh every 4 seconds
+  useEffect(() => {
+    const checkAuth = async () => {
+      // Small delay to ensure cookies are readable if just logged in
+      try {
+        const res = await fetch("/api/doctor/login"); // We'll use GET to check session
+        // Wait, I need a GET endpoint for login to check session.
+        // Or check document.cookie.
+        const doctorIdInCookie = document.cookie
+          .split("; ")
+          .find(row => row.startsWith("smartopd_doctor_id="))
+          ?.split("=")[1];
+
+        if (doctorIdInCookie !== id) {
+          router.push("/doctor/login");
+          return;
+        }
+        setIsAuthorized(true);
+        fetchDoctorState();
+      } catch (e) {
+        router.push("/doctor/login");
+      }
+    };
+
+    checkAuth();
+    const interval = setInterval(() => {
+      if (document.cookie.includes(`smartopd_doctor_id=${id}`)) {
+        fetchDoctorState();
+      }
+    }, 4000);
+    return () => clearInterval(interval);
+  }, [fetchDoctorState, id, router]);
+
+
+
+  const handleCallNext = async () => {
+    setActionLoading(true);
+    try {
+      const res = await fetch(`/api/doctor/${id}/next`, { method: "POST" });
+      const data = await res.json();
+      if (data.success) {
+        setDoctor(data.doctor);
+        setInCabin(data.inCabin);
+        setUpNext(data.upNext);
+        setQueue(data.queueDetails);
+      }
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  const handleSkip = async () => {
+    setActionLoading(true);
+    try {
+      const res = await fetch(`/api/doctor/${id}/skip`, { method: "POST" });
+      const data = await res.json();
+      if (data.success) {
+        // Fetch fresh state after skip
+        const refresh = await fetch(`/api/doctor/${id}`).then(r => r.json());
+        if (refresh.success) {
+          setDoctor(refresh.doctor);
+          setInCabin(refresh.inCabin);
+          setUpNext(refresh.upNext);
+          setQueue(refresh.queueDetails);
+        }
+      }
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  if (loading || !isAuthorized) {
+    return (
+      <div className="min-h-screen bg-[#09090b] flex items-center justify-center">
+        <RefreshCw className="w-8 h-8 text-emerald-500 animate-spin opacity-50" />
+      </div>
+    );
+  }
+
+  if (!doctor) {
+    return <div className="text-white p-10">Doctor not found in system.</div>;
+  }
+
+  return (
+    <div className="min-h-screen relative flex flex-col text-white overflow-hidden">
+      {/* LaserFlow Background */}
+      <div className="absolute inset-0 z-0 pointer-events-none">
+        <LaserFlow
+          color="#7a7fff"
+          wispDensity={1}
+          flowSpeed={0.35}
+          verticalSizing={2}
+          horizontalSizing={0.5}
+          fogIntensity={0.45}
+          fogScale={0.3}
+          wispSpeed={15}
+          wispIntensity={5}
+          flowStrength={0.25}
+          decay={1.1}
+          horizontalBeamOffset={0}
+          verticalBeamOffset={-0.5}
+        />
+      </div>
+
+      <div className="relative z-10 flex flex-col min-h-screen">
+        <SmartNavbar active="doctor" badge="Doctor Console" extra={
+          <div className="flex items-center gap-4">
+            <div className="text-right text-sm">
+              <p className="text-[11px] text-zinc-500 uppercase tracking-widest font-bold">Avg Speed</p>
+              <p className="font-bold text-emerald-400">{Math.round(doctor.averageConsultationTimeMs / 60000)}m / patient</p>
+            </div>
+            <a href={`/display/${id}`} target="_blank" className="text-[12px] font-bold text-zinc-400 hover:text-white border border-[#27272a] px-3 py-1.5 rounded-lg hover:bg-[#18181b] transition-colors">
+              TV Display →
+            </a>
+          </div>
+        } />
+
+        <main className="flex-1 flex px-6 py-6 gap-6 max-w-[1400px] mx-auto w-full">
+        
+        {/* Left Side: Active Session Control */}
+        <div className="flex-[2] flex flex-col gap-6">
+          <div className="card p-8 flex flex-col items-center justify-center text-center min-h-[400px] bg-gradient-to-b from-[#111113] to-[#09090b] border-[#27272a] relative overflow-hidden">
+            
+            {/* Dynamic Background Glow */}
+            <div className={`absolute top-0 left-1/2 -translate-x-1/2 w-96 h-96 blur-[100px] pointer-events-none rounded-full opacity-20 ${inCabin ? 'bg-emerald-500' : 'bg-zinc-500'}`} />
+
+            <h2 className="text-[12px] font-bold text-zinc-500 tracking-widest uppercase mb-6 relative z-10">
+              Current Patient In Cabin
+            </h2>
+
+            <AnimatePresence mode="wait">
+              {inCabin ? (
+                <motion.div
+                  key={inCabin.id}
+                  initial={{ opacity: 0, scale: 0.95 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 1.05 }}
+                  className="relative z-10 flex flex-col items-center w-full"
+                >
+                  <div className="bg-[#18181b] border border-[#27272a] px-5 py-2 rounded-full flex items-center gap-2 mb-6">
+                    <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                    <span className="text-[13px] font-semibold text-emerald-400 font-mono tracking-widest">
+                      {inCabin.tokenId}
+                    </span>
+                  </div>
+
+                  <h1 className="text-5xl font-black tracking-tight mb-2 w-full truncate px-4">
+                    {inCabin.name}
+                  </h1>
+                  <p className="text-zinc-500 font-medium mb-12 flex items-center gap-2">
+                    <User className="w-4 h-4" /> {inCabin.phone}
+                  </p>
+
+                  <div className="flex items-center justify-center gap-4 w-full px-10">
+                    <button
+                      onClick={handleSkip}
+                      disabled={actionLoading}
+                      className="px-6 py-4 rounded-xl font-bold tracking-wide text-[13px] border border-[#27272a] bg-[#0d0d0f] hover:bg-[#18181b] text-zinc-400 transition-colors"
+                    >
+                      Missing / Skip
+                    </button>
+                    
+                    <button
+                      onClick={handleCallNext}
+                      disabled={actionLoading}
+                      className="flex-1 btn-primary py-4 text-[16px] shadow-lg shadow-emerald-500/20"
+                    >
+                      {actionLoading ? "Processing..." : "Complete & Call Next"}
+                    </button>
+                  </div>
+                </motion.div>
+              ) : (
+                <motion.div
+                  key="empty"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  className="relative z-10"
+                >
+                  <Monitor className="w-16 h-16 text-zinc-600 mx-auto mb-4" />
+                  <h1 className="text-2xl font-bold text-zinc-400 mb-2">Cabin is Empty</h1>
+                  <p className="text-zinc-500 mb-8 max-w-sm">
+                    No active consultation. Click below to bring the next person in from the queue.
+                  </p>
+                  <button
+                    onClick={handleCallNext}
+                    disabled={actionLoading || queue.length === 0}
+                    className="btn-primary px-8 py-3 w-full max-w-xs"
+                  >
+                    Call Next Patient
+                  </button>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
+
+          <div className="card p-6 bg-[#0d0d0f] border-[#27272a]">
+             <h3 className="text-[12px] font-bold text-zinc-500 tracking-widest uppercase mb-4 flex items-center justify-between">
+               <span>Next Up</span>
+               <span className="text-emerald-500">{upNext ? upNext.tokenId : "None"}</span>
+             </h3>
+             {upNext ? (
+               <div className="flex items-center justify-between bg-[#18181b] p-4 rounded-lg border border-[#27272a]">
+                 <div>
+                   <p className="text-xl font-bold">{upNext.name}</p>
+                   <p className="text-[13px] text-zinc-500 mt-1">{upNext.phone}</p>
+                 </div>
+                 <ChevronRight className="w-6 h-6 text-zinc-600" />
+               </div>
+             ) : (
+               <div className="p-4 text-center text-zinc-600 border border-dashed border-[#27272a] rounded-lg">
+                 Queue is perfectly clear.
+               </div>
+             )}
+          </div>
+        </div>
+
+        {/* Right Side: Virtual Queue */}
+        <div className="flex-1 flex flex-col items-stretch card p-0 border-[#27272a] overflow-hidden max-h-[800px]">
+          <div className="p-5 border-b border-[#1e1e22] bg-[#111113] flex items-center justify-between sticky top-0">
+             <h2 className="text-[13px] font-bold text-zinc-100 uppercase tracking-widest flex items-center gap-2">
+               <Users className="w-4 h-4 text-emerald-500" />
+               Waiting Queue
+             </h2>
+             <span className="bg-[#18181b] text-zinc-300 px-2.5 py-1 rounded text-[11px] font-bold">
+               {queue.length} Total
+             </span>
+          </div>
+          
+          <div className="flex-1 overflow-y-auto p-2 bg-[#0d0d0f]">
+            <AnimatePresence>
+              {queue.length === 0 ? (
+                <div className="p-10 text-center text-zinc-500 flex flex-col items-center">
+                  <CheckCircle2 className="w-12 h-12 mb-3 text-[#27272a]" />
+                  <p className="text-[14px]">Queue is completely empty.</p>
+                </div>
+              ) : (
+                queue.map((p, idx) => (
+                  <motion.div
+                    key={p.id}
+                    initial={{ opacity: 0, x: 20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    exit={{ opacity: 0, height: 0 }}
+                    className="flex items-center justify-between p-4 bg-[#111113] border border-[#1e1e22] rounded-lg mb-2 relative group"
+                  >
+                    <div className="absolute left-0 top-0 bottom-0 w-1 bg-[#27272a] rounded-l-lg group-hover:bg-emerald-500 transition-colors" />
+                    <div className="pl-2">
+                      <div className="flex items-center gap-2 mb-1">
+                        <span className="text-[10px] font-bold tracking-widest text-emerald-500 uppercase">
+                          {p.tokenId}
+                        </span>
+                        {idx === 0 && (
+                          <span className="text-[10px] bg-emerald-500/20 text-emerald-400 px-1.5 py-0.5 rounded font-bold">
+                            NEXT
+                          </span>
+                        )}
+                      </div>
+                      <p className="font-semibold text-[15px]">{p.name}</p>
+                    </div>
+                    <div className="text-right text-[11px] text-zinc-500 font-bold uppercase tracking-widest bg-[#18181b] px-2 py-1 rounded">
+                      Pos: {idx + 1}
+                    </div>
+                  </motion.div>
+                ))
+              )}
+            </AnimatePresence>
+          </div>
+          </div>
+        </main>
+      </div>
+    </div>
+  );
+}
+
+function Stethoscope(props: any) {
+  return (
+    <svg
+      {...props}
+      xmlns="http://www.w3.org/2000/svg"
+      width="24"
+      height="24"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <path d="M4.8 2.3A.3.3 0 1 0 5 2H4a2 2 0 0 0-2 2v5a6 6 0 0 0 6 6v0a6 6 0 0 0 6-6V4a2 2 0 0 0-2-2h-1a.2.2 0 1 0 .3.3" />
+      <path d="M8 15v1a6 6 0 0 0 6 6v0a6 6 0 0 0 6-6v-4" />
+      <circle cx="20" cy="10" r="2" />
+    </svg>
+  );
+}
