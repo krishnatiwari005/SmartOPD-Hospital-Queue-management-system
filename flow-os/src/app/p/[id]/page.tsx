@@ -4,7 +4,7 @@
 import { useEffect, useState, useCallback, useRef } from "react";
 import { useParams } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
-import { Activity, Bell, MapPin, Clock, Users, CheckCircle2, RefreshCw, BellOff, Tv, ChevronRight } from "lucide-react";
+import { Activity, Bell, MapPin, Clock, Users, CheckCircle2, RefreshCw, BellOff, Tv, ChevronRight, AlertTriangle, X } from "lucide-react";
 import SmartNavbar from "@/components/SmartNavbar";
 
 export default function PatientTracker() {
@@ -14,6 +14,10 @@ export default function PatientTracker() {
   const [data, setData] = useState<any>(null);
   const [error, setError] = useState(false);
   const [loading, setLoading] = useState(true);
+
+  // Skip detection state
+  const prevStatusRef = useRef<string | null>(null);
+  const [wasSkipped, setWasSkipped] = useState(false);
 
   // Notification state
   const [notifyMinsInput, setNotifyMinsInput] = useState("10");
@@ -25,7 +29,27 @@ export default function PatientTracker() {
       const res = await fetch(`/api/patient/${id}`);
       if (!res.ok) { setError(true); return; }
       const json = await res.json();
-      if (json.success) setData(json.data);
+      if (json.success) {
+        const newStatus = json.data?.patient?.status;
+        const oldStatus = prevStatusRef.current;
+
+        // Detect skip: patient was IN_CABIN but is now back to WAITING
+        if (oldStatus === "IN_CABIN" && newStatus === "WAITING") {
+          setWasSkipped(true);
+
+          // Send browser push notification
+          if ("Notification" in window && Notification.permission === "granted") {
+            new Notification("SmartOPD — You Were Skipped", {
+              body: `Token ${json.data.patient.tokenId}: You were not present when called. You've been moved to the end of the queue.`,
+              icon: "/favicon.ico",
+              tag: "smartopd-skipped",
+            });
+          }
+        }
+
+        prevStatusRef.current = newStatus;
+        setData(json.data);
+      }
     } catch {
       setError(true);
     } finally {
@@ -136,6 +160,38 @@ export default function PatientTracker() {
           {/* ===== WAITING STATE ===== */}
           {!isCompleted && !isInCabin && (
             <motion.div key="waiting" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="w-full space-y-4">
+
+              {/* ===== SKIPPED BANNER ===== */}
+              <AnimatePresence>
+                {wasSkipped && (
+                  <motion.div
+                    initial={{ opacity: 0, y: -20, scale: 0.95 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    exit={{ opacity: 0, y: -20, scale: 0.95 }}
+                    className="relative bg-gradient-to-r from-red-950/80 to-orange-950/60 border border-red-500/30 rounded-2xl p-5 overflow-hidden"
+                  >
+                    {/* Animated glow */}
+                    <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-red-500 via-orange-500 to-red-500 animate-pulse" />
+                    <button
+                      onClick={() => setWasSkipped(false)}
+                      className="absolute top-3 right-3 p-1.5 rounded-full hover:bg-white/10 text-zinc-500 hover:text-white transition-colors"
+                    >
+                      <X className="w-4 h-4" />
+                    </button>
+                    <div className="flex items-start gap-3">
+                      <div className="p-2 bg-red-500/20 rounded-xl border border-red-500/30 shrink-0 mt-0.5">
+                        <AlertTriangle className="w-5 h-5 text-red-400" />
+                      </div>
+                      <div>
+                        <h3 className="text-[15px] font-black text-red-400 mb-1">You Were Skipped</h3>
+                        <p className="text-[13px] text-zinc-400 leading-relaxed">
+                          You were not present when the doctor called your name. You&apos;ve been moved to the <span className="text-orange-400 font-bold">end of the queue</span>. Please stay nearby when your turn approaches.
+                        </p>
+                      </div>
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
 
               {/* Live pill */}
               <div className="flex justify-center pt-2">

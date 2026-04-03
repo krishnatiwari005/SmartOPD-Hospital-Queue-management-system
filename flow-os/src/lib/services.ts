@@ -197,12 +197,21 @@ export async function skipCurrentPatient(doctorId: string) {
     .single();
 
   if (doc?.current_patient_id) {
-    // Put them back in WAITING but maybe with a slightly updated time or just skip
-    // Real-world: SKIPPED patients usually have to re-register or go to end
+    // Move skipped patient back to WAITING with updated timestamp → goes to end of queue
     await supabaseAdmin
       .from("patients")
-      .update({ status: "SKIPPED" })
+      .update({ 
+        status: "WAITING",
+        created_at: new Date().toISOString(),
+        cabin_entry_time: null
+      })
       .eq("id", doc.current_patient_id);
+
+    // Clear doctor's current patient so callNext picks the next in line cleanly
+    await supabaseAdmin
+      .from("doctors")
+      .update({ current_patient_id: null })
+      .eq("id", doctorId);
   }
 
   return callNext(doctorId);
