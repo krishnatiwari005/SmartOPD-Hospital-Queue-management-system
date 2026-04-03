@@ -2,7 +2,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import { Activity, Plus, FileText, Download, ArrowUpRight, Copy, Check, Info } from "lucide-react";
+import { Activity, Plus, FileText, Download, ArrowUpRight, Copy, Check, Info, Mic, MicOff } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { QRCodeCanvas } from "qrcode.react";
 import jsPDF from "jspdf";
@@ -27,6 +27,10 @@ export default function ReceptionDashboard() {
     room: string;
     date: string;
   } | null>(null);
+
+  // Speech Recognition state
+  const [isListening, setIsListening] = useState(false);
+  const recognitionRef = useRef<any>(null);
 
   const ticketRef = useRef<HTMLDivElement>(null);
   const [downloading, setDownloading] = useState(false);
@@ -149,6 +153,39 @@ export default function ReceptionDashboard() {
     }
   };
 
+  const toggleVoiceInput = () => {
+    if (isListening) {
+      recognitionRef.current?.stop();
+      setIsListening(false);
+      return;
+    }
+
+    const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+    if (!SpeechRecognition) {
+      alert("Voice input is not supported in this browser. Please use Chrome or Edge.");
+      return;
+    }
+
+    const recognition = new SpeechRecognition();
+    recognition.lang = "en-IN"; // Good for Indian accents, also works with Hin-glish
+    recognition.continuous = false;
+    recognition.interimResults = false;
+
+    recognition.onstart = () => setIsListening(true);
+    recognition.onend = () => setIsListening(false);
+    recognition.onerror = () => setIsListening(false);
+
+    recognition.onresult = (event: any) => {
+      const transcript = event.results[0][0].transcript;
+      if (transcript) {
+        setSymptoms(prev => (prev ? `${prev} ${transcript}` : transcript));
+      }
+    };
+
+    recognitionRef.current = recognition;
+    recognition.start();
+  };
+
   return (
     <div className="min-h-screen relative text-zinc-100 flex flex-col overflow-hidden">
       {/* LaserFlow Background */}
@@ -269,8 +306,21 @@ export default function ReceptionDashboard() {
                     placeholder="Describe symptoms for AI to categorize priority..."
                     required
                     rows={3}
-                    className="relative w-full px-5 py-4 bg-emerald-950/20 border border-emerald-500/30 rounded-xl text-sm text-white placeholder:text-emerald-500/40 focus:outline-none focus:border-emerald-400 transition-all resize-none shadow-[inset_0_0_30px_rgba(16,185,129,0.05)] font-medium leading-relaxed"
+                    className="relative w-full px-5 py-4 bg-emerald-950/20 border border-emerald-500/30 rounded-xl text-sm text-white placeholder:text-emerald-500/40 focus:outline-none focus:border-emerald-400 transition-all resize-none shadow-[inset_0_0_30px_rgba(16,185,129,0.05)] font-medium leading-relaxed pr-14"
                   />
+                  {/* Mic Toggle Button */}
+                  <button
+                    type="button"
+                    onClick={toggleVoiceInput}
+                    className={`absolute right-3 bottom-3 p-3 rounded-full border transition-all duration-300 z-20 ${
+                      isListening 
+                        ? "bg-red-500/20 border-red-500/50 text-red-500 shadow-[0_0_20px_rgba(239,68,68,0.3)] animate-pulse" 
+                        : "bg-emerald-500/10 border-emerald-500/20 text-emerald-400 hover:bg-emerald-500/20"
+                    }`}
+                    title={isListening ? "Stop Listening" : "Speak Symptoms"}
+                  >
+                    {isListening ? <MicOff className="w-5 h-5" /> : <Mic className="w-5 h-5" />}
+                  </button>
                 </div>
               </div>
 
