@@ -254,26 +254,32 @@ export default function AIChatBot() {
           </motion.div>
         )}
       </AnimatePresence>
+      <AnimatePresence>
+        {!isOpen && (
+          <motion.div 
+            initial={{ opacity: 0, scale: 0.5 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.5 }}
+            className="fixed bottom-24 right-6 md:bottom-6 md:right-6 z-[1000]"
+          >
+            <motion.button
+              whileHover={{ scale: 1.1, rotate: 5 }}
+              whileTap={{ scale: 0.9 }}
+              onClick={() => setIsOpen(true)}
+              className="w-16 h-16 rounded-2xl flex items-center justify-center shadow-2xl relative transition-all duration-500 backdrop-blur-2xl border-2 bg-emerald-500/10 border-emerald-500/30 text-emerald-400"
+            >
+              {/* Glowing Pulse Rings */}
+              <div className="absolute inset-0 rounded-2xl bg-emerald-500/20 animate-ping opacity-75" />
+              <div className="absolute inset-0 rounded-2xl bg-emerald-500/10 animate-pulse" />
 
-      <div className="fixed bottom-24 right-6 md:bottom-6 md:right-6 z-[1000]">
-        <motion.button
-          whileHover={{ scale: 1.1, rotate: 5 }}
-          whileTap={{ scale: 0.9 }}
-          onClick={() => setIsOpen(!isOpen)}
-          className="w-16 h-16 rounded-2xl flex items-center justify-center shadow-2xl relative transition-all duration-500 backdrop-blur-2xl border-2 bg-emerald-500/10 border-emerald-500/30 text-emerald-400"
-        >
-          {/* Glowing Pulse Rings */}
-          <div className="absolute inset-0 rounded-2xl bg-emerald-500/20 animate-ping opacity-75" />
-          <div className="absolute inset-0 rounded-2xl bg-emerald-500/10 animate-pulse" />
-
-          <div className="relative z-10">
-            <Bot className="w-8 h-8" />
-            <div className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 border-2 border-black rounded-full shadow-lg"></div>
-          </div>
-
-
-        </motion.button>
-      </div>
+              <div className="relative z-10">
+                <Bot className="w-8 h-8" />
+                <div className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 border-2 border-black rounded-full shadow-lg"></div>
+              </div>
+            </motion.button>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </>
   );
 }
