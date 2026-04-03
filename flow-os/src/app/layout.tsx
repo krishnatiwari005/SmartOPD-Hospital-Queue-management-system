@@ -14,11 +14,16 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "SmartOPD — Intelligent Hospital Queue Management",
+  title: "SmartOPD — AI Hospital Queue Management",
   description:
     "SmartOPD eliminates hospital waiting chaos. Real-time token tracking, ML-driven ETAs, and smart doctor consoles for modern healthcare.",
   keywords: ["hospital queue", "OPD", "token system", "SmartOPD", "patient tracker", "doctor console"],
   manifest: "/manifest.json",
+  appleWebApp: {
+    capable: true,
+    title: "SmartOPD",
+    statusBarStyle: "black-translucent",
+  },
 };
 
 export default function RootLayout({
@@ -42,6 +47,13 @@ export default function RootLayout({
           href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap"
           rel="stylesheet"
         />
+        {/* Apple PWA Splash Screen Support */}
+        <meta name="apple-mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-title" content="SmartOPD" />
+        <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+        <meta name="mobile-web-app-capable" content="yes" />
+        <link rel="apple-touch-icon" href="/icon-192.png" />
+        <link rel="apple-touch-startup-image" href="/logo.png" />
       </head>
       <body className="min-h-full flex flex-col bg-[#09090b] text-zinc-100">
         {children}

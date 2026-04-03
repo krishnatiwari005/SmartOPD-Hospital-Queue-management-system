@@ -1,11 +1,12 @@
 {
-  "name": "SmartOPD Hospital",
+  "name": "SmartOPD",
   "short_name": "SmartOPD",
-  "description": "SmartOPD Hospital Queue Management System",
+  "description": "AI-Driven Hospital Queue & Triage Management",
   "start_url": "/",
   "display": "standalone",
+  "orientation": "portrait",
   "background_color": "#09090b",
-  "theme_color": "#10b981",
+  "theme_color": "#09090b",
   "icons": [
     {
       "src": "/favicon.ico",
