@@ -266,7 +266,7 @@ export default function AIChatBot() {
               whileHover={{ scale: 1.1, rotate: 5 }}
               whileTap={{ scale: 0.9 }}
               onClick={() => setIsOpen(true)}
-              className="w-16 h-16 rounded-2xl flex items-center justify-center shadow-2xl relative transition-all duration-500 backdrop-blur-2xl border-2 bg-emerald-500/10 border-emerald-500/30 text-emerald-400"
+              className="w-16 h-16 rounded-2xl flex items-center justify-center shadow-2xl relative transition-all duration-500 backdrop-blur-2xl border-2 bg-emerald-500/5 border-emerald-500/10 text-emerald-400/90"
             >
               {/* Glowing Pulse Rings */}
               <div className="absolute inset-0 rounded-2xl bg-emerald-500/20 animate-ping opacity-75" />
