@@ -176,26 +176,37 @@ export default function ReceptionDashboard() {
       <main className="flex-1 flex flex-col lg:flex-row px-4 md:px-6 py-6 md:py-8 gap-8 max-w-6xl mx-auto w-full">
         
         {/* Left Side: Form */}
-        <div className="w-full lg:max-w-md">
-          <div className="flex items-center justify-between mb-1">
-            <h1 className="text-2xl font-bold tracking-tight">Patient Registration</h1>
-            {!isStandalone && (
-              <button 
-                onClick={handleInstallClick}
-                className="bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-3 py-1.5 rounded-lg text-xs font-bold flex items-center gap-2 hover:bg-emerald-500/20 transition-colors"
-                title="Install SmartOPD"
-              >
-                <Download className="w-3.5 h-3.5" />
-                Install App
-              </button>
-            )}
-          </div>
-          <p className="text-zinc-500 text-[14px] mb-8">Generate a digital parcha and assign a token instantly.</p>
+        <div className="w-full lg:max-w-[440px] relative group">
+          
+          <div className="absolute -inset-2 bg-gradient-to-br from-emerald-500/20 via-teal-500/5 to-transparent rounded-[2.5rem] blur-2xl opacity-50 group-hover:opacity-70 transition duration-1000 pointer-events-none"></div>
 
-          <form onSubmit={handleGenerateParcha} className="bg-[#111113] border border-[#27272a] rounded-2xl p-6 shadow-xl">
-            <div className="space-y-5">
+          <div className="relative bg-[#09090b]/80 backdrop-blur-2xl border border-white/5 rounded-3xl p-8 shadow-2xl shadow-black/50">
+            
+            <div className="flex items-center justify-between mb-8">
+              <div className="flex items-center gap-4">
+                <div className="p-3 bg-emerald-500/10 rounded-2xl border border-emerald-500/20 shadow-[0_0_30px_rgba(16,185,129,0.15)] flex-shrink-0">
+                  <Activity className="w-6 h-6 text-emerald-400" />
+                </div>
+                <div>
+                  <h1 className="text-2xl font-black tracking-tight text-white mb-1">AI Triage Node</h1>
+                  <p className="text-zinc-500 text-[12px] font-medium uppercase tracking-widest">Intake & Auto-Sorting</p>
+                </div>
+              </div>
+
+              {!isStandalone && (
+                <button 
+                  onClick={handleInstallClick}
+                  className="bg-zinc-900 border border-zinc-800 text-zinc-300 hover:text-white px-3 py-2 rounded-xl text-xs font-bold flex items-center gap-2 hover:bg-zinc-800 hover:border-zinc-700 transition-all shadow-lg"
+                  title="Install SmartOPD"
+                >
+                  <Download className="w-4 h-4" />
+                </button>
+              )}
+            </div>
+
+            <form onSubmit={handleGenerateParcha} className="space-y-6">
               <div>
-                <label className="block text-[11px] font-bold uppercase tracking-widest text-zinc-500 mb-2">
+                <label className="block text-[10px] font-bold uppercase tracking-[0.2em] text-zinc-500 mb-2 pl-1">
                   Patient Full Name
                 </label>
                 <input
@@ -204,12 +215,12 @@ export default function ReceptionDashboard() {
                   onChange={(e) => setName(e.target.value)}
                   placeholder="e.g. Ramesh Kumar"
                   required
-                  className="w-full px-4 py-3 bg-[#0d0d0f] border border-[#27272a] rounded-lg text-sm text-zinc-100 placeholder:text-zinc-600 focus:outline-none focus:border-emerald-500/50 hover:border-zinc-700 transition-colors"
+                  className="w-full px-5 py-4 bg-black/40 border border-white/5 rounded-xl text-sm text-zinc-100 placeholder:text-zinc-600 focus:outline-none focus:border-emerald-500/50 hover:border-white/10 transition-all font-medium"
                 />
               </div>
 
               <div>
-                <label className="block text-[11px] font-bold uppercase tracking-widest text-zinc-500 mb-2">
+                <label className="block text-[10px] font-bold uppercase tracking-[0.2em] text-zinc-500 mb-2 pl-1">
                   Phone Number
                 </label>
                 <input
@@ -218,21 +229,21 @@ export default function ReceptionDashboard() {
                   onChange={(e) => setPhone(e.target.value)}
                   placeholder="+91 98765 43210"
                   required
-                  className="w-full px-4 py-3 bg-[#0d0d0f] border border-[#27272a] rounded-lg text-sm text-zinc-100 placeholder:text-zinc-600 focus:outline-none focus:border-emerald-500/50 hover:border-zinc-700 transition-colors"
+                  className="w-full px-5 py-4 bg-black/40 border border-white/5 rounded-xl text-sm text-zinc-100 placeholder:text-zinc-600 focus:outline-none focus:border-emerald-500/50 hover:border-white/10 transition-all font-medium"
                 />
               </div>
 
               <div>
-                <label className="block text-[11px] font-bold uppercase tracking-widest text-zinc-500 mb-2">
+                <label className="block text-[10px] font-bold uppercase tracking-[0.2em] text-zinc-500 mb-2 pl-1">
                   Assign Doctor
                 </label>
                 <select
                   value={selectedDoctor}
                   onChange={(e) => setSelectedDoctor(e.target.value)}
                   disabled={doctors.length === 0}
-                  className="w-full px-4 py-3 bg-[#0d0d0f] border border-[#27272a] rounded-lg text-sm text-zinc-100 focus:outline-none focus:border-emerald-500/50 hover:border-zinc-700 transition-colors appearance-none"
+                  className="w-full px-5 py-4 bg-black/40 border border-white/5 rounded-xl text-sm text-zinc-100 focus:outline-none focus:border-emerald-500/50 hover:border-white/10 transition-all font-medium appearance-none cursor-pointer"
                 >
-                  {doctors.length === 0 ? <option>Loading doctors...</option> : null}
+                  {doctors.length === 0 ? <option>Loading network...</option> : null}
                   {doctors.map(doc => (
                     <option key={doc.id} value={doc.id}>
                       {doc.name} — {doc.department} (Queue: {doc.queueLength})
@@ -241,34 +252,42 @@ export default function ReceptionDashboard() {
                 </select>
               </div>
 
-              <div>
-                <div className="flex justify-between mb-2">
-                  <label className="block text-[11px] font-bold uppercase tracking-widest text-zinc-500">
-                    Patient Symptoms (ML Analysis)
+              <div className="relative group/ai mt-6">
+                <div className="flex justify-between mb-3 px-1">
+                  <label className="block text-[10px] font-bold uppercase tracking-[0.2em] text-emerald-500 drop-shadow-[0_0_10px_rgba(16,185,129,0.5)]">
+                    Machine Learning NLP Input
                   </label>
-                  <span className="text-[10px] text-emerald-500/70 font-bold uppercase tracking-widest flex items-center gap-1">
-                    <Activity className="w-3 h-3" /> AI Triage Active
+                  <span className="text-[9px] bg-emerald-500/20 text-emerald-400 px-2 py-0.5 rounded border border-emerald-500/20 font-bold uppercase tracking-widest flex items-center gap-1.5 animate-pulse shadow-[0_0_15px_rgba(16,185,129,0.2)]">
+                    <Activity className="w-3 h-3" /> Live Triage Sync
                   </span>
                 </div>
-                <textarea
-                  value={symptoms}
-                  onChange={(e) => setSymptoms(e.target.value)}
-                  placeholder="Describe the medical situation..."
-                  required
-                  rows={2}
-                  className="w-full px-4 py-3 bg-[#0d0d0f] border border-[#27272a] rounded-lg text-sm text-zinc-100 placeholder:text-zinc-600 focus:outline-none focus:border-emerald-500/50 hover:border-zinc-700 transition-colors resize-none"
-                />
+                <div className="relative">
+                  <div className="absolute -inset-0.5 bg-gradient-to-r from-emerald-500/30 to-teal-500/10 rounded-xl blur opacity-40 group-focus-within/ai:opacity-100 transition duration-500 pointer-events-none"></div>
+                  <textarea
+                    value={symptoms}
+                    onChange={(e) => setSymptoms(e.target.value)}
+                    placeholder="Describe symptoms for AI to categorize priority..."
+                    required
+                    rows={3}
+                    className="relative w-full px-5 py-4 bg-emerald-950/20 border border-emerald-500/30 rounded-xl text-sm text-white placeholder:text-emerald-500/40 focus:outline-none focus:border-emerald-400 transition-all resize-none shadow-[inset_0_0_30px_rgba(16,185,129,0.05)] font-medium leading-relaxed"
+                  />
+                </div>
               </div>
 
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full btn-primary flex items-center justify-center gap-2 py-3.5 text-[14px] mt-4"
+                className="w-full relative overflow-hidden group/btn bg-white text-black py-4 rounded-xl font-black text-[14px] uppercase tracking-widest hover:scale-[1.02] active:scale-95 transition-all mt-4 flex items-center justify-center gap-3 shadow-[0_0_40px_rgba(255,255,255,0.15)] hover:shadow-[0_0_60px_rgba(255,255,255,0.3)] disabled:opacity-50 disabled:pointer-events-none"
               >
-                {loading ? "Generating..." : <><Plus className="w-4 h-4" /> Generate Digital Parcha</>}
+                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-black/10 to-transparent translate-x-[-100%] group-hover/btn:translate-x-[100%] transition-transform duration-1000"></div>
+                {loading ? (
+                  <><Activity className="w-5 h-5 animate-spin" /> Processing AI Logic...</>
+                ) : (
+                  <><Plus className="w-5 h-5" /> Execute & Generate</>
+                )}
               </button>
-            </div>
-          </form>
+            </form>
+          </div>
         </div>
 
         {/* Right Side: Digital Parcha */}
@@ -375,11 +394,25 @@ export default function ReceptionDashboard() {
                 key="empty"
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
-                className="text-center text-zinc-600 flex flex-col items-center border border-dashed border-[#27272a] rounded-2xl p-16 w-full"
+                className="relative flex flex-col items-center justify-center border border-white/5 bg-black/20 backdrop-blur-md rounded-[2.5rem] p-12 w-full h-[500px] overflow-hidden lg:ml-8"
               >
-                <FileText className="w-12 h-12 mb-4 opacity-50" />
-                <p className="font-medium text-zinc-500">Parcha will appear here</p>
-                <p className="text-sm opacity-60 mt-1">Fill the form and click Generate to create a digital parcha.</p>
+                {/* Holographic Grid Background */}
+                <div className="absolute inset-0 bg-[linear-gradient(to_right,#ffffff08_1px,transparent_1px),linear-gradient(to_bottom,#ffffff08_1px,transparent_1px)] bg-[size:32px_32px]"></div>
+                
+                {/* Radial gradient mask for grid */}
+                <div className="absolute inset-0 bg-black/40 [mask-image:radial-gradient(ellipse_at_center,transparent_20%,black_70%)]"></div>
+
+                <div className="relative z-10 flex flex-col items-center text-center">
+                  <div className="w-24 h-24 bg-emerald-500/5 rounded-full flex items-center justify-center border-2 border-emerald-500/20 mb-8 relative shadow-[0_0_50px_rgba(16,185,129,0.1)]">
+                    <div className="absolute inset-0 rounded-full border border-emerald-500/30 animate-ping opacity-30 duration-3000"></div>
+                    <div className="absolute inset-2 rounded-full border border-emerald-500/20 animate-ping opacity-20 delay-300 duration-2000"></div>
+                    <FileText className="w-10 h-10 text-emerald-400" />
+                  </div>
+                  <h3 className="font-bold text-2xl text-white mb-3 font-mono tracking-widest drop-shadow-md">NODE STANDBY</h3>
+                  <p className="text-[15px] font-medium text-zinc-400 max-w-[280px] leading-relaxed">
+                    Awaiting symptom input to generate AI-triaged digital parcha.
+                  </p>
+                </div>
               </motion.div>
             )}
           </AnimatePresence>

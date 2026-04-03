@@ -3,7 +3,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { User, CheckCircle2, ChevronRight, RefreshCw, Monitor, Users } from "lucide-react";
+import { User, CheckCircle2, ChevronRight, RefreshCw, Monitor, Users, X, Phone, Brain, Clock } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import SmartNavbar from "@/components/SmartNavbar";
 import LaserFlow from "@/components/LaserFlow";
@@ -20,6 +20,7 @@ export default function DoctorConsole() {
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState(false);
   const [isAuthorized, setIsAuthorized] = useState(false);
+  const [selectedPatient, setSelectedPatient] = useState<any>(null);
 
   const fetchDoctorState = useCallback(async () => {
     try {
@@ -121,6 +122,80 @@ export default function DoctorConsole() {
 
   return (
     <div className="min-h-screen relative flex flex-col text-white overflow-hidden">
+      {/* Patient Detail Modal */}
+      {selectedPatient && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div className="absolute inset-0 bg-black/70 backdrop-blur-md" onClick={() => setSelectedPatient(null)} />
+          <div className="relative z-10 bg-[#0d0d0f] border border-white/10 rounded-3xl p-8 max-w-md w-full shadow-2xl shadow-black/80">
+            {/* Close */}
+            <button onClick={() => setSelectedPatient(null)} className="absolute top-4 right-4 p-2 rounded-full hover:bg-white/10 text-zinc-500 hover:text-white transition-colors">
+              <X className="w-5 h-5" />
+            </button>
+
+            {/* Header */}
+            <div className="flex items-center gap-4 mb-6">
+              <div className={`p-3 rounded-2xl border ${
+                selectedPatient.triageLevel === "CRITICAL" ? "bg-red-500/10 border-red-500/30" :
+                selectedPatient.triageLevel === "URGENT" ? "bg-orange-500/10 border-orange-500/30" :
+                "bg-emerald-500/10 border-emerald-500/20"
+              }`}>
+                <User className={`w-6 h-6 ${
+                  selectedPatient.triageLevel === "CRITICAL" ? "text-red-400" :
+                  selectedPatient.triageLevel === "URGENT" ? "text-orange-400" :
+                  "text-emerald-400"
+                }`} />
+              </div>
+              <div>
+                <h2 className="text-2xl font-black text-white">{selectedPatient.name}</h2>
+                <p className="text-[12px] text-zinc-500 font-mono tracking-widest">{selectedPatient.tokenId}</p>
+              </div>
+            </div>
+
+            {/* Triage Badge */}
+            <div className={`mb-6 px-4 py-3 rounded-2xl border flex items-center gap-3 ${
+              selectedPatient.triageLevel === "CRITICAL" ? "bg-red-500/10 border-red-500/30" :
+              selectedPatient.triageLevel === "URGENT" ? "bg-orange-500/10 border-orange-500/30" :
+              "bg-emerald-500/5 border-emerald-500/20"
+            }`}>
+              <Brain className={`w-5 h-5 ${
+                selectedPatient.triageLevel === "CRITICAL" ? "text-red-500" :
+                selectedPatient.triageLevel === "URGENT" ? "text-orange-500" :
+                "text-emerald-500"
+              }`} />
+              <div>
+                <p className="text-[10px] font-bold uppercase tracking-widest text-zinc-500 mb-0.5">AI Triage Priority</p>
+                <p className={`text-sm font-bold uppercase tracking-widest ${
+                  selectedPatient.triageLevel === "CRITICAL" ? "text-red-400" :
+                  selectedPatient.triageLevel === "URGENT" ? "text-orange-400" :
+                  "text-emerald-400"
+                }`}>{selectedPatient.triageLevel || "STANDARD"}</p>
+              </div>
+            </div>
+
+            {/* Info Grid */}
+            <div className="grid grid-cols-2 gap-4 mb-6">
+              <div className="bg-white/5 border border-white/5 rounded-xl p-4">
+                <p className="text-[10px] font-bold uppercase tracking-widest text-zinc-500 mb-1 flex items-center gap-1.5"><Phone className="w-3 h-3" /> Phone</p>
+                <p className="text-sm font-bold text-zinc-200">{selectedPatient.phone}</p>
+              </div>
+              <div className="bg-white/5 border border-white/5 rounded-xl p-4">
+                <p className="text-[10px] font-bold uppercase tracking-widest text-zinc-500 mb-1 flex items-center gap-1.5"><Clock className="w-3 h-3" /> Registered</p>
+                <p className="text-sm font-bold text-zinc-200">{new Date(selectedPatient.created_at).toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit" })}</p>
+              </div>
+            </div>
+
+            {/* Symptoms (The AI Input) */}
+            <div className="bg-emerald-950/30 border border-emerald-500/20 rounded-2xl p-5">
+              <p className="text-[10px] font-bold uppercase tracking-widest text-emerald-500 mb-3 flex items-center gap-2">
+                <Stethoscope className="w-3.5 h-3.5" /> Patient Symptoms (ML Input)
+              </p>
+              <p className="text-sm text-zinc-200 leading-relaxed">
+                {selectedPatient.symptoms || <span className="text-zinc-500 italic">No symptoms recorded.</span>}
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
       {/* LaserFlow Background */}
       <div className="absolute inset-0 z-0 pointer-events-none">
         <LaserFlow
@@ -183,7 +258,13 @@ export default function DoctorConsole() {
                   </div>
 
                   <h1 className="text-3xl md:text-5xl font-black tracking-tight mb-2 w-full truncate px-4 flex items-center justify-center gap-3">
-                    {inCabin.name}
+                    <button
+                      onClick={() => inCabin && setSelectedPatient(inCabin)}
+                      className="hover:text-emerald-400 transition-colors cursor-pointer"
+                      title="View patient details"
+                    >
+                      {inCabin.name}
+                    </button>
                     {inCabin.triageLevel === "CRITICAL" && <span className="text-[12px] bg-red-500/20 text-red-500 px-3 py-1 rounded-full uppercase tracking-widest border border-red-500/30">CRITICAL</span>}
                     {inCabin.triageLevel === "URGENT" && <span className="text-[12px] bg-orange-500/20 text-orange-500 px-3 py-1 rounded-full uppercase tracking-widest border border-orange-500/30">URGENT</span>}
                   </h1>
@@ -299,7 +380,13 @@ export default function DoctorConsole() {
                         )}
                       </div>
                       <p className="font-semibold text-[15px] flex items-center gap-2">
-                        {p.name}
+                        <button
+                          onClick={() => setSelectedPatient(p)}
+                          className="hover:text-emerald-400 transition-colors cursor-pointer text-left"
+                          title="View patient details"
+                        >
+                          {p.name}
+                        </button>
                         {p.triageLevel === "CRITICAL" && <span className="text-[9px] bg-red-500/10 text-red-500 px-1.5 py-0.5 rounded border border-red-500/20 tracking-widest">CRITICAL</span>}
                         {p.triageLevel === "URGENT" && <span className="text-[9px] bg-orange-500/10 text-orange-500 px-1.5 py-0.5 rounded border border-orange-500/20 tracking-widest">URGENT</span>}
                       </p>
