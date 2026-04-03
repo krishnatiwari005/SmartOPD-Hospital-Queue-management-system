@@ -16,16 +16,27 @@ export async function POST(
 
     // Return current state for the UI using admin client
     const { data: doc } = await supabaseAdmin.from("doctors").select("*").eq("id", id).single();
-    const { data: queueDetails } = await supabaseAdmin.from("patients").select("*").eq("doctor_id", id).eq("status", "WAITING").order("created_at", { ascending: true });
+    const { data: queueDetails } = await supabaseAdmin.from("patients").select("*").eq("doctor_id", id).eq("status", "WAITING");
     
+    let sortedQueue = [];
+    if (queueDetails) {
+      const triageWeight: Record<string, number> = { CRITICAL: 0, URGENT: 1, STANDARD: 2 };
+      sortedQueue = [...queueDetails].sort((a, b) => {
+        const weightA = triageWeight[a.triage_level || "STANDARD"] ?? 2;
+        const weightB = triageWeight[b.triage_level || "STANDARD"] ?? 2;
+        if (weightA !== weightB) return weightA - weightB;
+        return new Date(a.created_at).getTime() - new Date(b.created_at).getTime();
+      });
+    }
+
     let inCabin = null;
     if (doc?.current_patient_id) {
         const { data: p } = await supabaseAdmin.from("patients").select("*").eq("id", doc.current_patient_id).single();
         inCabin = p;
     }
 
-    const mapPatient = (p: any) => p ? ({ ...p, tokenId: p.token_id }) : null;
-    const mappedQueue = (queueDetails || []).map(mapPatient);
+    const mapPatient = (p: any) => p ? ({ ...p, tokenId: p.token_id, triageLevel: p.triage_level }) : null;
+    const mappedQueue = sortedQueue.map(mapPatient);
 
     return NextResponse.json({
       success: true,

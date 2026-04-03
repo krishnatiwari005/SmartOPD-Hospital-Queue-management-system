@@ -1,0 +1,52 @@
+{
+  "CRITICAL": [
+    "heart attack chest pain severe sweating left arm numb crushing weight",
+    "difficulty breathing choking airway blocked severe asthma extreme gasping",
+    "unconscious passing out unresponsive faint dropped suddenly",
+    "heavy bleeding gushing blood deep wound spurting uncontrollable",
+    "stroke face drooping slurred speech sudden paralysis weakness",
+    "seizure convulsing fits epilepsy uncontrollable shaking",
+    "severe head trauma bleeding from ear cracked skull hit head hard",
+    "suicidal thoughts self harm danger immediate risk jumping",
+    "cardiac arrest no pulse blue lips no breathing",
+    "severe burns face hands third degree fire explosion",
+    "anaphylactic shock throat swelling closed tongue swollen bee sting extreme",
+    "multiple gunshot wounds stabbing deep chest penetration",
+    "poisoned swallowed bleach drank chemicals immediate flush",
+    "pregnant massive bleeding premature labor no movement crowning"
+  ],
+  "URGENT": [
+    "high fever over 103 chills shaking shivering cold sweats",
+    "severe abdominal pain throwing up blood vomit appendicitis sharp pain",
+    "broken bone fracture loud snap leg arm pain bone sticking out",
+    "severe allergic reaction hives swelling peanut rash spreading fast",
+    "animal bite deep cut needing stitches dog snake bite rabbit",
+    "blurred vision sudden eye pain extreme light sensitivity",
+    "extreme migraine cannot open eyes vomiting from headache",
+    "severe dehydration dizzy cannot stand hasn't drank water",
+    "burns on arms hot water spilled second degree bubbling skin",
+    "kidney stone intense flank pain screaming hurt lower back",
+    "dislocated shoulder popped out of socket hanging limb",
+    "asthma flare up using inhaler multiple times wheezing loud",
+    "constant bleeding nose won't stop for an hour dizzy",
+    "pregnant early bleeding spotting cramping heavily"
+  ],
+  "STANDARD": [
+    "mild fever cough cold runny nose flu feeling under the weather",
+    "sore throat scratchy tonsils mild cough",
+    "routine checkup follow up consultation regular physical",
+    "mild headache sinus pain pressure in head",
+    "routine eye test glasses prescription blurry reading",
+    "skin rash itchy slight allergic reaction to detergent",
+    "stomach ache diarrhea ate bad food mild nausea",
+    "knee pain mild joint pain arthritis old injury aching",
+    "sprained ankle rolled it walking swollen but can stand",
+    "minor cut papercut scraped knee cleaning",
+    "ear infection mild pain ringing check wax buildup",
+    "vaccination scheduled injection booster shot",
+    "muscle pull back ache slept wrong neck stiff",
+    "runny nose allergies pollen sneezing watery eyes",
+    "blood test sample drop off routine lab results",
+    "tooth hurts slightly checkup dental decay"
+  ]
+}

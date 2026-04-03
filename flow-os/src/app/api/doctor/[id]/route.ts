@@ -24,8 +24,18 @@ export async function GET(
       .from("patients")
       .select("*")
       .eq("doctor_id", id)
-      .eq("status", "WAITING")
-      .order("created_at", { ascending: true });
+      .eq("status", "WAITING");
+
+    let sortedQueue = [];
+    if (queueDetails) {
+      const triageWeight: Record<string, number> = { CRITICAL: 0, URGENT: 1, STANDARD: 2 };
+      sortedQueue = [...queueDetails].sort((a, b) => {
+        const weightA = triageWeight[a.triage_level || "STANDARD"] ?? 2;
+        const weightB = triageWeight[b.triage_level || "STANDARD"] ?? 2;
+        if (weightA !== weightB) return weightA - weightB;
+        return new Date(a.created_at).getTime() - new Date(b.created_at).getTime();
+      });
+    }
 
     // 3. Fetch in-cabin patient
     let inCabin = null;
@@ -38,8 +48,8 @@ export async function GET(
       inCabin = p;
     }
 
-    const mapPatient = (p: any) => p ? ({ ...p, tokenId: p.token_id }) : null;
-    const mappedQueue = (queueDetails || []).map(mapPatient);
+    const mapPatient = (p: any) => p ? ({ ...p, tokenId: p.token_id, triageLevel: p.triage_level }) : null;
+    const mappedQueue = sortedQueue.map(mapPatient);
     const mappedInCabin = mapPatient(inCabin);
 
     return NextResponse.json({

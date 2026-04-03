@@ -163,7 +163,13 @@ export default function PatientTracker() {
                     <p className="text-[10px] font-bold uppercase tracking-widest text-zinc-500 mb-2">Your Token</p>
                     <p className="text-3xl font-black font-mono text-white">{patient.tokenId}</p>
                     <div className="mt-2 flex justify-center">
-                      <span className="text-[10px] font-bold bg-amber-500/20 text-amber-400 px-1.5 py-0.5 rounded uppercase tracking-widest">Waiting</span>
+                      {patient.triage_level === "CRITICAL" ? (
+                        <span className="text-[10px] font-bold bg-red-500/20 text-red-500 px-2 py-0.5 rounded uppercase tracking-widest border border-red-500/30">Critical Priority</span>
+                      ) : patient.triage_level === "URGENT" ? (
+                        <span className="text-[10px] font-bold bg-orange-500/20 text-orange-500 px-2 py-0.5 rounded uppercase tracking-widest border border-orange-500/30">Urgent Priority</span>
+                      ) : (
+                        <span className="text-[10px] font-bold bg-amber-500/20 text-amber-500 px-2 py-0.5 rounded uppercase tracking-widest">Standard Queue</span>
+                      )}
                     </div>
                   </div>
                 </div>

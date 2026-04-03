@@ -4,7 +4,8 @@
 import { useEffect, useState, useCallback } from "react";
 import { useParams } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
-import { Bell, Activity, Monitor } from "lucide-react";
+import { Bell, Activity, Monitor, AlertTriangle } from "lucide-react";
+import LaserFlow from "@/components/LaserFlow";
 
 export default function WaitingRoomDisplay() {
   const params = useParams();
@@ -37,15 +38,37 @@ export default function WaitingRoomDisplay() {
     return <div className="min-h-screen bg-black flex items-center justify-center text-white text-3xl font-bold tracking-widest">OPD DISPLAY OFFLINE</div>;
   }
 
-  const { doctor, inCabin, upNext, queueDetails } = data;
+  const { doctor, inCabin, upNext, queueDetails = [] } = data;
 
   return (
-    <div className="min-h-screen bg-black text-white flex flex-col font-sans overflow-hidden">
+    <div className="min-h-screen relative bg-[#09090b] text-white flex flex-col font-sans overflow-hidden">
       
+      {/* Dynamic Laser Background */}
+      <div className="absolute inset-0 z-0 pointer-events-none opacity-40">
+        <LaserFlow
+          color={inCabin?.triageLevel === "CRITICAL" ? "#ef4444" : "#10b981"}
+          wispDensity={inCabin?.triageLevel === "CRITICAL" ? 3 : 1.5}
+          flowSpeed={inCabin?.triageLevel === "CRITICAL" ? 0.8 : 0.3}
+          verticalSizing={2}
+          horizontalSizing={1}
+          fogIntensity={0.5}
+          fogScale={0.4}
+          wispSpeed={20}
+          wispIntensity={6}
+          flowStrength={0.3}
+          decay={1.1}
+          horizontalBeamOffset={0}
+          verticalBeamOffset={0}
+        />
+      </div>
+
       {/* Top Banner */}
-      <header className="px-10 py-6 flex items-center justify-between border-b-[2px] border-[#27272a] bg-[#09090b]">
+      <header className="relative z-10 px-10 py-6 flex items-center justify-between border-b border-white/5 bg-black/40 backdrop-blur-xl">
          <div className="flex items-center gap-4">
-            <Activity className="w-10 h-10 text-emerald-500" />
+            <a href={`/doctor/${id}`} className="mr-2 p-2 rounded-full hover:bg-white/10 text-zinc-400 hover:text-white transition-colors">
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m12 19-7-7 7-7"/><path d="M19 12H5"/></svg>
+            </a>
+            <img src="/logo.png" alt="Logo" className="w-12 h-12" />
             <h1 className="text-3xl font-black tracking-tight">SmartOPD</h1>
          </div>
          <div className="text-right">
@@ -54,15 +77,15 @@ export default function WaitingRoomDisplay() {
          </div>
       </header>
 
-      <main className="flex-1 flex w-full h-[calc(100vh-120px)]">
+      <main className="relative z-10 flex-1 flex w-full h-[calc(100vh-120px)]">
         
         {/* Left: NOW SERVING (Big Focus) */}
-        <div className="w-[65%] border-r-[2px] border-[#27272a] bg-gradient-to-b from-[#111113] to-black flex flex-col items-center justify-center p-12 relative overflow-hidden">
+        <div className="w-[65%] border-r border-white/5 bg-black/20 flex flex-col items-center justify-center p-12 relative overflow-hidden backdrop-blur-sm">
            
-           <div className={`absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[800px] blur-[200px] rounded-full opacity-20 pointer-events-none ${inCabin ? 'bg-emerald-500' : 'bg-transparent'}`} />
+           <div className={`absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[800px] blur-[200px] rounded-full opacity-20 pointer-events-none ${!inCabin ? 'bg-transparent' : inCabin.triageLevel === 'CRITICAL' ? 'bg-red-500' : 'bg-emerald-500'}`} />
 
            <div className="relative z-10 w-full text-center">
-             <h3 className="text-3xl font-bold uppercase tracking-[0.2em] text-zinc-500 mb-8">Inside Cabin</h3>
+             <h3 className="text-3xl font-bold uppercase tracking-[0.2em] text-zinc-500 mb-8 drop-shadow-md">Inside Cabin</h3>
              
              <AnimatePresence mode="wait">
                {inCabin ? (
@@ -73,15 +96,20 @@ export default function WaitingRoomDisplay() {
                    exit={{ opacity: 0, y: -50 }}
                    className="flex flex-col items-center"
                  >
-                   <div className="bg-emerald-500/10 border-4 border-emerald-500/30 rounded-full px-16 py-6 inline-flex items-center gap-6 mb-12 shadow-[0_0_100px_rgba(16,185,129,0.15)]">
-                     <div className="w-6 h-6 rounded-full bg-emerald-500 animate-pulse" />
-                     <span className="text-[120px] leading-none font-black font-mono tracking-tighter text-emerald-400">
+                   <div className={`border-4 rounded-full px-16 py-6 inline-flex items-center gap-6 mb-12 backdrop-blur-xl ${inCabin.triageLevel === "CRITICAL" ? "bg-red-500/10 border-red-500/30 shadow-[0_0_100px_rgba(239,68,68,0.2)]" : "bg-emerald-500/10 border-emerald-500/30 shadow-[0_0_100px_rgba(16,185,129,0.15)]"}`}>
+                     <div className={`w-6 h-6 rounded-full animate-pulse ${inCabin.triageLevel === "CRITICAL" ? "bg-red-500" : "bg-emerald-500"}`} />
+                     <span className={`text-[120px] leading-none font-black font-mono tracking-tighter ${inCabin.triageLevel === "CRITICAL" ? "text-red-400" : "text-emerald-400"}`}>
                        {inCabin.tokenId}
                      </span>
                    </div>
-                   <h2 className="text-7xl font-bold tracking-tight w-full truncate px-10">
+                   <h2 className="text-7xl font-bold tracking-tight w-full truncate px-10 mb-4 drop-shadow-lg">
                      {inCabin.name}
                    </h2>
+                   {inCabin.triageLevel === "CRITICAL" && (
+                     <span className="inline-flex items-center gap-3 text-2xl bg-red-500/20 text-red-400 px-6 py-2 rounded-full uppercase tracking-widest border border-red-500/30 font-bold animate-pulse">
+                        <AlertTriangle className="w-8 h-8" /> Critical Emergency
+                     </span>
+                   )}
                  </motion.div>
                ) : (
                  <motion.div
@@ -99,17 +127,19 @@ export default function WaitingRoomDisplay() {
         </div>
 
         {/* Right: UP NEXT and Queue */}
-        <div className="w-[35%] bg-[#09090b] flex flex-col p-10">
+        <div className="w-[35%] bg-black/60 backdrop-blur-xl flex flex-col p-10 border-l border-white/5">
            
            {/* Up Next Showcase */}
-           <div className="mb-10 min-h-[250px] bg-[#111113] border-[2px] border-[#27272a] rounded-3xl p-8 flex flex-col justify-center">
-             <h3 className="text-xl font-bold uppercase tracking-[0.2em] text-emerald-500 mb-6 flex items-center gap-3">
-               <span className="w-3 h-3 bg-emerald-500 rounded-full animate-bounce" /> Up Next
+           <div className={`mb-10 min-h-[250px] border rounded-3xl p-8 flex flex-col justify-center backdrop-blur-2xl shadow-xl transition-all ${upNext?.triageLevel === "CRITICAL" ? "bg-red-500/10 border-red-500/40" : "bg-white/5 border-white/10"}`}>
+             <h3 className={`text-xl font-bold uppercase tracking-[0.2em] mb-6 flex items-center gap-3 ${upNext?.triageLevel === "CRITICAL" ? "text-red-500" : "text-emerald-500"}`}>
+               <span className={`w-3 h-3 rounded-full animate-bounce ${upNext?.triageLevel === "CRITICAL" ? "bg-red-500" : "bg-emerald-500"}`} /> Up Next
              </h3>
              {upNext ? (
                <div>
-                  <p className="text-7xl font-black font-mono tracking-tighter mb-4">{upNext.tokenId}</p>
-                  <p className="text-3xl font-bold text-zinc-400 truncate">{upNext.name}</p>
+                  <p className="text-7xl font-black font-mono tracking-tighter mb-4 drop-shadow-md">{upNext.tokenId}</p>
+                  <p className="text-3xl font-bold text-zinc-300 truncate">{upNext.name}</p>
+                  {upNext.triageLevel === "CRITICAL" && <p className="text-lg text-red-500 font-bold uppercase tracking-widest mt-2">Critical Triage</p>}
+                  {upNext.triageLevel === "URGENT" && <p className="text-lg text-orange-500 font-bold uppercase tracking-widest mt-2">Urgent Triage</p>}
                </div>
              ) : (
                <p className="text-2xl font-bold text-zinc-600">No one waiting.</p>
@@ -131,10 +161,13 @@ export default function WaitingRoomDisplay() {
                        key={p.id}
                        initial={{ opacity: 0, x: 20 }}
                        animate={{ opacity: 1, x: 0 }}
-                       className="bg-[#111113] border border-[#1e1e22] rounded-2xl p-5 flex items-center justify-between"
+                       className={`border rounded-2xl p-5 flex items-center justify-between backdrop-blur-md ${p.triageLevel === "CRITICAL" ? "bg-red-500/10 border-red-500/30" : p.triageLevel === "URGENT" ? "bg-orange-500/10 border-orange-500/30" : "bg-white/5 border-white/5"}`}
                      >
-                       <span className="text-4xl font-bold font-mono text-zinc-300">{p.tokenId}</span>
-                       <span className="text-xl font-semibold text-zinc-500 truncate max-w-[50%]">{p.name}</span>
+                       <div className="flex flex-col">
+                         <span className="text-4xl font-bold font-mono text-zinc-200 drop-shadow-md">{p.tokenId}</span>
+                         {p.triageLevel === "CRITICAL" && <span className="text-[11px] text-red-500 font-bold uppercase tracking-widest mt-1">EMERGENCY</span>}
+                       </div>
+                       <span className="text-xl font-semibold text-zinc-400 truncate max-w-[50%]">{p.name}</span>
                      </motion.div>
                    ))}
                    {queueDetails.length <= 1 && (

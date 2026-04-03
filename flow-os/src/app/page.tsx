@@ -14,6 +14,7 @@ export default function ReceptionDashboard() {
   const [doctors, setDoctors] = useState<any[]>([]);
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
+  const [symptoms, setSymptoms] = useState("");
   const [selectedDoctor, setSelectedDoctor] = useState("");
   const [loading, setLoading] = useState(false);
   const [ticket, setTicket] = useState<{
@@ -76,7 +77,7 @@ export default function ReceptionDashboard() {
       const res = await fetch("/api/reception/add", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, phone, doctorId: selectedDoctor }),
+        body: JSON.stringify({ name, phone, doctorId: selectedDoctor, symptoms }),
       });
       const data = await res.json();
       if (data.success) {
@@ -94,6 +95,7 @@ export default function ReceptionDashboard() {
         });
         setName("");
         setPhone("");
+        setSymptoms("");
       } else {
         alert(data.error);
       }
@@ -237,6 +239,25 @@ export default function ReceptionDashboard() {
                     </option>
                   ))}
                 </select>
+              </div>
+
+              <div>
+                <div className="flex justify-between mb-2">
+                  <label className="block text-[11px] font-bold uppercase tracking-widest text-zinc-500">
+                    Patient Symptoms (ML Analysis)
+                  </label>
+                  <span className="text-[10px] text-emerald-500/70 font-bold uppercase tracking-widest flex items-center gap-1">
+                    <Activity className="w-3 h-3" /> AI Triage Active
+                  </span>
+                </div>
+                <textarea
+                  value={symptoms}
+                  onChange={(e) => setSymptoms(e.target.value)}
+                  placeholder="Describe the medical situation..."
+                  required
+                  rows={2}
+                  className="w-full px-4 py-3 bg-[#0d0d0f] border border-[#27272a] rounded-lg text-sm text-zinc-100 placeholder:text-zinc-600 focus:outline-none focus:border-emerald-500/50 hover:border-zinc-700 transition-colors resize-none"
+                />
               </div>
 
               <button

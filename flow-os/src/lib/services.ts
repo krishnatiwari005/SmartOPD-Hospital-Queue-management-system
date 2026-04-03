@@ -14,6 +14,8 @@ export interface Patient {
   status: PatientStatus;
   created_at: string;
   cabin_entry_time?: string;
+  symptoms?: string;
+  triage_level?: string;
 }
 
 export interface Doctor {
@@ -33,7 +35,7 @@ export interface Doctor {
  * 🏥 RECEPTION SERVICES
  */
 
-export async function addPatient(doctorId: string, name: string, phone: string) {
+export async function addPatient(doctorId: string, name: string, phone: string, symptoms?: string, triageLevel?: string) {
   // 1. Get doctor data to generate token
   const { data: doc, error: docError } = await supabaseAdmin
     .from("doctors")
@@ -56,7 +58,9 @@ export async function addPatient(doctorId: string, name: string, phone: string) 
       name,
       phone,
       doctor_id: doctorId,
-      status: "WAITING"
+      status: "WAITING",
+      symptoms,
+      triage_level: triageLevel || "STANDARD"
     })
     .select()
     .single();
@@ -133,15 +137,24 @@ export async function callNext(doctorId: string) {
     }
   }
 
-  // 3. Pick the next patient in queue
-  const { data: nextPatient } = await supabaseAdmin
+  // 3. Pick the next patient in queue based on ML Priority
+  const { data: waitingPatients } = await supabaseAdmin
     .from("patients")
     .select("*")
     .eq("doctor_id", doctorId)
-    .eq("status", "WAITING")
-    .order("created_at", { ascending: true })
-    .limit(1)
-    .single();
+    .eq("status", "WAITING");
+
+  let nextPatient = null;
+  if (waitingPatients && waitingPatients.length > 0) {
+    const triageWeight: Record<string, number> = { CRITICAL: 0, URGENT: 1, STANDARD: 2 };
+    waitingPatients.sort((a, b) => {
+      const weightA = triageWeight[a.triage_level || "STANDARD"] ?? 2;
+      const weightB = triageWeight[b.triage_level || "STANDARD"] ?? 2;
+      if (weightA !== weightB) return weightA - weightB;
+      return new Date(a.created_at).getTime() - new Date(b.created_at).getTime();
+    });
+    nextPatient = waitingPatients[0];
+  }
 
   if (nextPatient) {
     // Bring them into the cabin
@@ -211,13 +224,35 @@ export async function getPatientLiveStatus(patientId: string) {
   const doc = patient.doctors;
   if (!doc) return null;
 
-  // Calculate position: How many are WAITING and joined BEFORE this patient
-  const { count: peopleAhead } = await supabaseAdmin
+  // Fetch full queue list to calculate ML Priority sorting correctly
+  const { data: queueData } = await supabaseAdmin
     .from("patients")
-    .select("*", { count: "exact", head: true })
+    .select("id, token_id, created_at, triage_level")
     .eq("doctor_id", doc.id)
-    .eq("status", "WAITING")
-    .lt("created_at", patient.created_at);
+    .eq("status", "WAITING");
+
+  let queueList: any[] = [];
+  let peopleAhead = 0;
+
+  if (queueData) {
+    const triageWeight: Record<string, number> = { CRITICAL: 0, URGENT: 1, STANDARD: 2 };
+    const sortedQueue = [...queueData].sort((a, b) => {
+      const weightA = triageWeight[a.triage_level || "STANDARD"] ?? 2;
+      const weightB = triageWeight[b.triage_level || "STANDARD"] ?? 2;
+      if (weightA !== weightB) return weightA - weightB;
+      return new Date(a.created_at).getTime() - new Date(b.created_at).getTime();
+    });
+
+    const myIndex = sortedQueue.findIndex(p => p.id === patientId);
+    peopleAhead = myIndex > -1 ? myIndex : 0;
+
+    queueList = sortedQueue.map((p, idx) => ({
+      tokenId: p.token_id,
+      position: idx + 1,
+      isYou: p.id === patientId,
+      triageLevel: p.triage_level || "STANDARD"
+    }));
+  }
 
   const finalAhead = (peopleAhead || 0) + (doc.current_patient_id ? 1 : 0);
   const estimatedWaitMins = Math.round((finalAhead * (doc.avg_consultation_time_ms || 600000)) / 60000);
@@ -232,20 +267,6 @@ export async function getPatientLiveStatus(patientId: string) {
       .single();
     currentlyServing = cp?.token_id;
   }
-
-  // Fetch full queue list for the UI
-  const { data: queueData } = await supabaseAdmin
-    .from("patients")
-    .select("id, token_id, created_at")
-    .eq("doctor_id", doc.id)
-    .eq("status", "WAITING")
-    .order("created_at", { ascending: true });
-
-  const queueList = (queueData || []).map((p, idx) => ({
-    tokenId: p.token_id,
-    position: idx + 1,
-    isYou: p.id === patientId,
-  }));
 
   return {
     patient: {

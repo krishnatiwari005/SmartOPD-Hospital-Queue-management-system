@@ -147,7 +147,7 @@ export default function DoctorConsole() {
               <p className="text-[11px] text-zinc-500 uppercase tracking-widest font-bold">Avg Speed</p>
               <p className="font-bold text-emerald-400">{Math.round(doctor.averageConsultationTimeMs / 60000)}m / patient</p>
             </div>
-            <a href={`/display/${id}`} target="_blank" className="hidden sm:flex text-[12px] font-bold text-zinc-400 hover:text-white border border-[#27272a] px-3 py-1.5 rounded-lg hover:bg-[#18181b] transition-colors">
+            <a href={`/display/${id}`} target="_blank" className="flex text-[12px] font-bold bg-emerald-500/10 text-emerald-400 hover:text-emerald-300 border border-emerald-500/20 px-3 py-1.5 rounded-lg hover:bg-emerald-500/20 transition-colors whitespace-nowrap">
               TV Display →
             </a>
           </div>
@@ -182,8 +182,10 @@ export default function DoctorConsole() {
                     </span>
                   </div>
 
-                  <h1 className="text-3xl md:text-5xl font-black tracking-tight mb-2 w-full truncate px-4">
+                  <h1 className="text-3xl md:text-5xl font-black tracking-tight mb-2 w-full truncate px-4 flex items-center justify-center gap-3">
                     {inCabin.name}
+                    {inCabin.triageLevel === "CRITICAL" && <span className="text-[12px] bg-red-500/20 text-red-500 px-3 py-1 rounded-full uppercase tracking-widest border border-red-500/30">CRITICAL</span>}
+                    {inCabin.triageLevel === "URGENT" && <span className="text-[12px] bg-orange-500/20 text-orange-500 px-3 py-1 rounded-full uppercase tracking-widest border border-orange-500/30">URGENT</span>}
                   </h1>
                   <p className="text-zinc-500 font-medium mb-12 flex items-center gap-2">
                     <User className="w-4 h-4" /> {inCabin.phone}
@@ -239,7 +241,11 @@ export default function DoctorConsole() {
              {upNext ? (
                <div className="flex items-center justify-between bg-[#18181b] p-4 rounded-lg border border-[#27272a]">
                  <div>
-                   <p className="text-xl font-bold">{upNext.name}</p>
+                   <p className="text-xl font-bold flex items-center gap-2">
+                     {upNext.name}
+                     {upNext.triageLevel === "CRITICAL" && <span className="text-[9px] bg-red-500/20 text-red-500 px-2 py-0.5 rounded uppercase tracking-widest border border-red-500/30">CRITICAL</span>}
+                     {upNext.triageLevel === "URGENT" && <span className="text-[9px] bg-orange-500/20 text-orange-500 px-2 py-0.5 rounded uppercase tracking-widest border border-orange-500/30">URGENT</span>}
+                   </p>
                    <p className="text-[13px] text-zinc-500 mt-1">{upNext.phone}</p>
                  </div>
                  <ChevronRight className="w-6 h-6 text-zinc-600" />
@@ -292,7 +298,11 @@ export default function DoctorConsole() {
                           </span>
                         )}
                       </div>
-                      <p className="font-semibold text-[15px]">{p.name}</p>
+                      <p className="font-semibold text-[15px] flex items-center gap-2">
+                        {p.name}
+                        {p.triageLevel === "CRITICAL" && <span className="text-[9px] bg-red-500/10 text-red-500 px-1.5 py-0.5 rounded border border-red-500/20 tracking-widest">CRITICAL</span>}
+                        {p.triageLevel === "URGENT" && <span className="text-[9px] bg-orange-500/10 text-orange-500 px-1.5 py-0.5 rounded border border-orange-500/20 tracking-widest">URGENT</span>}
+                      </p>
                     </div>
                     <div className="text-right text-[11px] text-zinc-500 font-bold uppercase tracking-widest bg-[#18181b] px-2 py-1 rounded">
                       Pos: {idx + 1}
