@@ -143,14 +143,17 @@ export default function AIChatBot() {
   ];
 
   return (
-    <div className="fixed bottom-6 right-6 z-[999]">
+    <>
       <AnimatePresence>
         {isOpen && (
+          <div className="fixed inset-0 z-[998] bg-black/60 backdrop-blur-sm md:hidden" onClick={() => setIsOpen(false)} />
+        )}
+        {isOpen && (
           <motion.div
-            initial={{ opacity: 0, y: 20, scale: 0.9, transformOrigin: "bottom right" }}
+            initial={{ opacity: 0, y: 20, scale: 0.95 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: 20, scale: 0.9 }}
-            className="absolute bottom-20 right-0 w-[350px] md:w-[400px] h-[550px] bg-[#09090b]/95 backdrop-blur-2xl border border-white/10 rounded-[2rem] shadow-2xl overflow-hidden flex flex-col"
+            exit={{ opacity: 0, y: 20, scale: 0.95 }}
+            className="fixed inset-x-4 bottom-32 top-6 md:top-auto md:bottom-24 md:right-6 md:left-auto md:w-[400px] md:h-[600px] z-[999] bg-[#09090b]/95 backdrop-blur-2xl border border-white/10 rounded-[2.5rem] shadow-2xl overflow-hidden flex flex-col"
           >
             {/* Header */}
             <div className="p-5 bg-gradient-to-r from-emerald-500/10 to-teal-500/10 border-b border-white/5 flex items-center justify-between">
@@ -216,7 +219,6 @@ export default function AIChatBot() {
                     key={i}
                     onClick={() => {
                         setInput(s.text);
-                        // Delay execution slightly for better UX
                         setTimeout(handleSend, 100);
                     }}
                     className="flex items-center gap-1.5 px-3 py-1.5 bg-white/5 border border-white/10 rounded-full text-[11px] text-zinc-400 hover:text-emerald-400 hover:bg-emerald-500/10 hover:border-emerald-500/20 transition-all font-bold uppercase tracking-wider"
@@ -254,33 +256,35 @@ export default function AIChatBot() {
       </AnimatePresence>
 
       {/* Trigger Button */}
-      <motion.button
-        whileHover={{ scale: 1.05 }}
-        whileTap={{ scale: 0.95 }}
-        onClick={() => setIsOpen(!isOpen)}
-        className={`w-14 h-14 rounded-full flex items-center justify-center shadow-2xl relative transition-all duration-500 ${
-          isOpen ? "bg-white text-black rotate-90" : "bg-emerald-500 text-black"
-        }`}
-      >
-        <AnimatePresence mode="wait">
-          {isOpen ? (
-            <motion.div key="x" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
-              <X className="w-7 h-7" />
-            </motion.div>
-          ) : (
-            <motion.div key="bot" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="relative">
-              <Bot className="w-7 h-7" />
-              <div className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 border-2 border-black rounded-full animate-ping"></div>
-            </motion.div>
-          )}
-        </AnimatePresence>
+      <div className="fixed bottom-24 right-6 md:bottom-6 md:right-6 z-[999]">
+        <motion.button
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
+          onClick={() => setIsOpen(!isOpen)}
+          className={`w-14 h-14 rounded-full flex items-center justify-center shadow-2xl relative transition-all duration-500 ${
+            isOpen ? "bg-white text-black rotate-90" : "bg-emerald-500 text-black"
+          }`}
+        >
+          <AnimatePresence mode="wait">
+            {isOpen ? (
+              <motion.div key="x" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+                <X className="w-7 h-7" />
+              </motion.div>
+            ) : (
+              <motion.div key="bot" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="relative">
+                <Bot className="w-7 h-7" />
+                <div className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 border-2 border-black rounded-full animate-ping"></div>
+              </motion.div>
+            )}
+          </AnimatePresence>
 
-        {!isOpen && (
-            <div className="absolute -top-10 right-0 bg-[#09090b] border border-white/10 text-[10px] text-zinc-300 py-1.5 px-3 rounded-xl whitespace-nowrap shadow-xl pointer-events-none uppercase font-black tracking-widest animate-bounce">
-                Ask Hub <Sparkles className="inline-block w-3 h-3 ml-1 text-emerald-400" />
-            </div>
-        )}
-      </motion.button>
-    </div>
+          {!isOpen && (
+              <div className="absolute -top-10 right-0 bg-[#09090b] border border-white/10 text-[10px] text-zinc-300 py-1.5 px-3 rounded-xl whitespace-nowrap shadow-xl pointer-events-none uppercase font-black tracking-widest animate-bounce">
+                  Ask Hub <Sparkles className="inline-block w-3 h-3 ml-1 text-emerald-400" />
+              </div>
+          )}
+        </motion.button>
+      </div>
+    </>
   );
 }
