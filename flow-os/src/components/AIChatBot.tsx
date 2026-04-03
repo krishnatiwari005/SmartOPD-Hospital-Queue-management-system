@@ -255,32 +255,41 @@ export default function AIChatBot() {
         )}
       </AnimatePresence>
 
-      {/* Trigger Button */}
-      <div className="fixed bottom-24 right-6 md:bottom-6 md:right-6 z-[999]">
+      <div className="fixed bottom-24 right-6 md:bottom-6 md:right-6 z-[1000]">
         <motion.button
-          whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.95 }}
+          whileHover={{ scale: 1.1, rotate: 5 }}
+          whileTap={{ scale: 0.9 }}
           onClick={() => setIsOpen(!isOpen)}
-          className={`w-14 h-14 rounded-full flex items-center justify-center shadow-2xl relative transition-all duration-500 ${
-            isOpen ? "bg-white text-black rotate-90" : "bg-emerald-500 text-black"
+          className={`w-16 h-16 rounded-2xl flex items-center justify-center shadow-2xl relative transition-all duration-500 backdrop-blur-2xl border-2 ${
+            isOpen 
+              ? "bg-white border-white text-black rotate-90 rounded-full" 
+              : "bg-emerald-500/10 border-emerald-500/30 text-emerald-400"
           }`}
         >
+          {/* Glowing Pulse Rings (Only when closed) */}
+          {!isOpen && (
+            <>
+              <div className="absolute inset-0 rounded-2xl bg-emerald-500/20 animate-ping opacity-75" />
+              <div className="absolute inset-0 rounded-2xl bg-emerald-500/10 animate-pulse" />
+            </>
+          )}
+
           <AnimatePresence mode="wait">
             {isOpen ? (
               <motion.div key="x" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
-                <X className="w-7 h-7" />
+                <X className="w-8 h-8" />
               </motion.div>
             ) : (
-              <motion.div key="bot" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="relative">
-                <Bot className="w-7 h-7" />
-                <div className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 border-2 border-black rounded-full animate-ping"></div>
+              <motion.div key="bot" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="relative z-10">
+                <Bot className="w-8 h-8" />
+                <div className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 border-2 border-black rounded-full shadow-lg"></div>
               </motion.div>
             )}
           </AnimatePresence>
 
           {!isOpen && (
-              <div className="absolute -top-10 right-0 bg-[#09090b] border border-white/10 text-[10px] text-zinc-300 py-1.5 px-3 rounded-xl whitespace-nowrap shadow-xl pointer-events-none uppercase font-black tracking-widest animate-bounce">
-                  Ask Hub <Sparkles className="inline-block w-3 h-3 ml-1 text-emerald-400" />
+              <div className="absolute -top-12 right-0 bg-[#09090b]/80 backdrop-blur-md border border-white/10 text-[10px] text-emerald-400 py-2 px-4 rounded-full whitespace-nowrap shadow-xl pointer-events-none uppercase font-black tracking-widest flex items-center gap-2">
+                  <Sparkles className="w-3.5 h-3.5" /> ASK AI
               </div>
           )}
         </motion.button>
