@@ -3,7 +3,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { User, CheckCircle2, ChevronRight, RefreshCw, Monitor, Users, X, Phone, Brain, Clock } from "lucide-react";
+import { User, CheckCircle2, ChevronRight, RefreshCw, Monitor, Users, X, Phone, Brain, Clock, ArrowDownUp } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import SmartNavbar from "@/components/SmartNavbar";
 import LaserFlow from "@/components/LaserFlow";
@@ -105,6 +105,23 @@ export default function DoctorConsole() {
       }
     } finally {
       setActionLoading(false);
+    }
+  };
+
+  const handleCorrectTriage = async (patientId: string, newLevel: string) => {
+    try {
+      const res = await fetch(`/api/doctor/${id}/correct-triage`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ patientId, triageLevel: newLevel }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        // Refresh state to reflect updated triage
+        fetchDoctorState();
+      }
+    } catch (err) {
+      console.error("Triage correction error:", err);
     }
   };
 
@@ -268,9 +285,42 @@ export default function DoctorConsole() {
                     {inCabin.triageLevel === "CRITICAL" && <span className="text-[12px] bg-red-500/20 text-red-500 px-3 py-1 rounded-full uppercase tracking-widest border border-red-500/30">CRITICAL</span>}
                     {inCabin.triageLevel === "URGENT" && <span className="text-[12px] bg-orange-500/20 text-orange-500 px-3 py-1 rounded-full uppercase tracking-widest border border-orange-500/30">URGENT</span>}
                   </h1>
-                  <p className="text-zinc-500 font-medium mb-12 flex items-center gap-2">
+                  <p className="text-zinc-500 font-medium mb-4 flex items-center gap-2">
                     <User className="w-4 h-4" /> {inCabin.phone}
                   </p>
+
+                  {/* 🧠 AI Triage Correction — Doctor Feedback Loop */}
+                  <div className="mb-8 w-full max-w-md px-4">
+                    <p className="text-[10px] font-bold text-zinc-600 uppercase tracking-widest mb-2 flex items-center gap-1.5 justify-center">
+                      <ArrowDownUp className="w-3 h-3" /> Correct AI Triage
+                    </p>
+                    <div className="flex items-center gap-2 justify-center">
+                      {(["CRITICAL", "URGENT", "STANDARD"] as const).map((level) => {
+                        const isActive = inCabin.triageLevel === level;
+                        const styles = {
+                          CRITICAL: isActive
+                            ? "bg-red-500/20 text-red-400 border-red-500/40 ring-1 ring-red-500/30"
+                            : "bg-transparent text-zinc-600 border-[#27272a] hover:text-red-400 hover:border-red-500/30",
+                          URGENT: isActive
+                            ? "bg-orange-500/20 text-orange-400 border-orange-500/40 ring-1 ring-orange-500/30"
+                            : "bg-transparent text-zinc-600 border-[#27272a] hover:text-orange-400 hover:border-orange-500/30",
+                          STANDARD: isActive
+                            ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/30 ring-1 ring-emerald-500/20"
+                            : "bg-transparent text-zinc-600 border-[#27272a] hover:text-emerald-400 hover:border-emerald-500/30",
+                        };
+                        return (
+                          <button
+                            key={level}
+                            onClick={() => !isActive && handleCorrectTriage(inCabin.id, level)}
+                            className={`px-3 py-1.5 rounded-lg text-[11px] font-bold uppercase tracking-widest border transition-all ${styles[level]}`}
+                          >
+                            {level}
+                          </button>
+                        );
+                      })}
+                    </div>
+                    <p className="text-[9px] text-zinc-700 mt-1.5 text-center">Your correction trains the AI model</p>
+                  </div>
 
                   <div className="flex items-center justify-center gap-3 w-full px-4 md:px-10">
                     <button

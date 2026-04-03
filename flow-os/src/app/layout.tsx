@@ -55,8 +55,24 @@ export default function RootLayout({
         <link rel="apple-touch-icon" href="/icon-192.png" />
         <link rel="apple-touch-startup-image" href="/logo.png" />
       </head>
-      <body className="min-h-full flex flex-col bg-[#09090b] text-zinc-100">
+      <body className="min-h-full flex-col bg-[#09090b] text-zinc-100 flex">
         {children}
+        {/* Register Service Worker for PWA Notifications */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              if ('serviceWorker' in navigator) {
+                window.addEventListener('load', function() {
+                  navigator.serviceWorker.register('/sw.js').then(function(registration) {
+                    console.log('ServiceWorker registration successful with scope: ', registration.scope);
+                  }, function(err) {
+                    console.log('ServiceWorker registration failed: ', err);
+                  });
+                });
+              }
+            `,
+          }}
+        />
       </body>
     </html>
   );

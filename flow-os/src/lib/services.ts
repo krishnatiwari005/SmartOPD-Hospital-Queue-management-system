@@ -133,6 +133,14 @@ export async function callNext(doctorId: string) {
             patients_seen_today: doc.patients_seen_today + 1
           })
           .eq("id", doctorId);
+
+        // 🧠 Store actual consultation duration for ML time prediction learning
+        try {
+          await supabaseAdmin
+            .from("patients")
+            .update({ consultation_duration_ms: effectiveTimeMs })
+            .eq("id", doc.current_patient_id);
+        } catch { /* consultation_duration_ms column may not exist yet */ }
       }
     }
   }
@@ -218,6 +226,34 @@ export async function skipCurrentPatient(doctorId: string) {
 }
 
 /**
+ * 🧠 DOCTOR TRIAGE CORRECTION (ML Feedback Loop)
+ */
+
+export async function correctTriageLevel(patientId: string, newTriageLevel: string) {
+  if (!["CRITICAL", "URGENT", "STANDARD"].includes(newTriageLevel)) {
+    return { success: false, error: "Invalid triage level" };
+  }
+
+  const { error } = await supabaseAdmin
+    .from("patients")
+    .update({ triage_level: newTriageLevel })
+    .eq("id", patientId);
+
+  if (error) return { success: false, error: error.message };
+
+  // Trigger ML model retrain in the background
+  try {
+    const { retrainModel } = await import("./ml-triage");
+    const stats = await retrainModel();
+    console.log(`🧠 ML Retrain triggered by doctor feedback | ${stats.totalSamples} total samples`);
+  } catch (err) {
+    console.error("ML retrain after correction failed:", err);
+  }
+
+  return { success: true };
+}
+
+/**
  * 📱 PATIENT LIVE TRACKING
  */
 
@@ -242,6 +278,8 @@ export async function getPatientLiveStatus(patientId: string) {
 
   let queueList: any[] = [];
   let peopleAhead = 0;
+  let estimatedWaitMins = 0;
+  let finalAhead = 0;
 
   if (queueData) {
     const triageWeight: Record<string, number> = { CRITICAL: 0, URGENT: 1, STANDARD: 2 };
@@ -255,16 +293,45 @@ export async function getPatientLiveStatus(patientId: string) {
     const myIndex = sortedQueue.findIndex(p => p.id === patientId);
     peopleAhead = myIndex > -1 ? myIndex : 0;
 
-    queueList = sortedQueue.map((p, idx) => ({
-      tokenId: p.token_id,
-      position: idx + 1,
-      isYou: p.id === patientId,
-      triageLevel: p.triage_level || "STANDARD"
-    }));
-  }
+    // 🧠 ML-Predicted consultation times per patient
+    const { predictConsultationTime } = await import("./ml-triage");
+    const doctorAvgMs = doc.avg_consultation_time_ms || 600000;
 
-  const finalAhead = (peopleAhead || 0) + (doc.current_patient_id ? 1 : 0);
-  const estimatedWaitMins = Math.round((finalAhead * (doc.avg_consultation_time_ms || 600000)) / 60000);
+    // Start with estimated remaining time for in-cabin patient
+    let cumulativeWaitMs = 0;
+    if (doc.current_patient_id) {
+      cumulativeWaitMs += Math.round(doctorAvgMs * 0.5);
+    }
+
+    let myEstimatedWaitMs = 0;
+
+    for (let i = 0; i < sortedQueue.length; i++) {
+      const p = sortedQueue[i];
+      const predictedMs = await predictConsultationTime(doc.id, p.triage_level || "STANDARD", doctorAvgMs);
+      const predictedMins = Math.round(predictedMs / 60000);
+
+      // Record the patient's wait at this point (before their consultation)
+      const waitFromNowMins = Math.round(cumulativeWaitMs / 60000);
+
+      if (p.id === patientId) {
+        myEstimatedWaitMs = cumulativeWaitMs;
+      }
+
+      queueList.push({
+        tokenId: p.token_id,
+        position: i + 1,
+        isYou: p.id === patientId,
+        triageLevel: p.triage_level || "STANDARD",
+        estimatedMins: predictedMins,
+        waitFromNow: waitFromNowMins,
+      });
+
+      cumulativeWaitMs += predictedMs;
+    }
+
+    estimatedWaitMins = Math.round(myEstimatedWaitMs / 60000);
+    finalAhead = (peopleAhead || 0) + (doc.current_patient_id ? 1 : 0);
+  }
 
   // Fetch currently serving token ID
   let currentlyServing = null;

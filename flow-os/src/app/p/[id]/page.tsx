@@ -22,6 +22,7 @@ export default function PatientTracker() {
   // Notification state
   const [notifyMinsInput, setNotifyMinsInput] = useState("10");
   const [notificationScheduled, setNotificationScheduled] = useState(false);
+  const [permission, setPermission] = useState<NotificationPermission>("default");
   const notifyTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const fetchStatus = useCallback(async () => {
@@ -38,12 +39,25 @@ export default function PatientTracker() {
           setWasSkipped(true);
 
           // Send browser push notification
-          if ("Notification" in window && Notification.permission === "granted") {
-            new Notification("SmartOPD — You Were Skipped", {
+          if (Notification.permission === "granted") {
+            const options: any = {
               body: `Token ${json.data.patient.tokenId}: You were not present when called. You've been moved to the end of the queue.`,
               icon: "/favicon.ico",
+              badge: "/favicon.ico",
+              vibrate: [200, 100, 200, 100, 200],
               tag: "smartopd-skipped",
-            });
+              requireInteraction: true,
+            };
+
+            if ("serviceWorker" in navigator) {
+              navigator.serviceWorker.ready.then((registration) => {
+                registration.showNotification("SmartOPD — You Were Skipped", options);
+              }).catch(() => {
+                new Notification("SmartOPD — You Were Skipped", options);
+              });
+            } else {
+              new Notification("SmartOPD — You Were Skipped", options);
+            }
           }
         }
 
@@ -58,10 +72,26 @@ export default function PatientTracker() {
   }, [id]);
 
   useEffect(() => {
+    if (typeof window !== "undefined" && "Notification" in window) {
+      setPermission(Notification.permission);
+    }
+
     fetchStatus();
     const interval = setInterval(fetchStatus, 3000);
     return () => clearInterval(interval);
   }, [fetchStatus]);
+
+  const requestNotificationPermission = async () => {
+    if (!("Notification" in window)) return;
+    const perm = await Notification.requestPermission();
+    setPermission(perm);
+    if (perm === "granted") {
+      new Notification("Notifications Enabled!", {
+        body: "We will alert you when it's your turn.",
+        icon: "/favicon.ico"
+      });
+    }
+  };
 
   const handleScheduleNotification = async () => {
     const mins = parseInt(notifyMinsInput, 10);
@@ -201,6 +231,34 @@ export default function PatientTracker() {
                 </div>
               </div>
 
+              {/* ===== PERMISSION PROMPT ===== */}
+              {permission !== "granted" && (
+                <motion.div 
+                   initial={{ opacity: 0, y: -10 }}
+                   animate={{ opacity: 1, y: 0 }}
+                   className="w-full bg-[#111113] border border-emerald-500/20 rounded-2xl p-5 flex flex-col items-center gap-4 text-center shadow-xl shadow-emerald-500/5"
+                >
+                  <div className="w-12 h-12 bg-emerald-500/10 rounded-full flex items-center justify-center text-emerald-400">
+                    <Bell className="w-6 h-6 animate-bounce" />
+                  </div>
+                  <div>
+                    <h3 className="text-[15px] font-bold text-white mb-1">Enable Audio Alerts</h3>
+                    <p className="text-[12.5px] text-zinc-500 leading-relaxed max-w-[200px] mx-auto">
+                      Don&apos;t miss your turn. Get a buzz on your phone when called.
+                    </p>
+                  </div>
+                  <button 
+                    onClick={requestNotificationPermission}
+                    className="w-full py-3.5 bg-emerald-500 text-black font-black text-[14px] rounded-xl hover:bg-emerald-400 active:scale-[0.98] transition-all uppercase tracking-widest flex items-center justify-center gap-2"
+                  >
+                    Allow Alerts
+                  </button>
+                  <p className="text-[10px] text-zinc-600 italic">
+                    Tap &quot;Allow&quot; in the browser prompt next
+                  </p>
+                </motion.div>
+              )}
+
               {/* ★ THE KEY CARD: Currently Serving vs Your Token ★ */}
               <div className="bg-[#111113] border border-[#27272a] rounded-2xl overflow-hidden">
                 <div className="grid grid-cols-2 divide-x divide-[#27272a]">
@@ -245,8 +303,9 @@ export default function PatientTracker() {
                   </span>
                   <span className="text-2xl font-bold text-zinc-500">min</span>
                 </div>
-                <p className="text-zinc-600 text-[12px]">
-                  Based on {doctor.name}&apos;s avg: ~{doctor.currentAverageMins}m/patient
+                <p className="text-zinc-600 text-[12px] flex items-center justify-center gap-1.5">
+                  <span className="inline-block w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                  ML-Predicted · per-patient triage analysis
                 </p>
               </div>
 
@@ -284,7 +343,7 @@ export default function PatientTracker() {
                             <span className="text-[10px] font-bold bg-emerald-500/20 text-emerald-400 px-1.5 py-0.5 rounded">YOU</span>
                           )}
                         </div>
-                        <span className="text-[12px] text-zinc-500">+{idx * doctor.currentAverageMins}m</span>
+                        <span className="text-[12px] text-zinc-500">~{item.waitFromNow ?? 0}m</span>
                       </div>
                     ))}
                     {liveTracking.queueList.length > 8 && (
