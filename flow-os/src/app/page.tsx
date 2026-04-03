@@ -4,9 +4,9 @@
 import { useState, useEffect, useRef } from "react";
 import { Activity, Plus, FileText, Download, ArrowUpRight, Copy, Check, Info } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import { QRCodeSVG } from "qrcode.react";
+import { QRCodeCanvas } from "qrcode.react";
 import jsPDF from "jspdf";
-import html2canvas from "html2canvas";
+import { toPng } from "html-to-image";
 import SmartNavbar from "@/components/SmartNavbar";
 import LaserFlow from "@/components/LaserFlow";
 
@@ -29,6 +29,32 @@ export default function ReceptionDashboard() {
 
   const ticketRef = useRef<HTMLDivElement>(null);
   const [downloading, setDownloading] = useState(false);
+  const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
+  const [isStandalone, setIsStandalone] = useState(true);
+
+  useEffect(() => {
+    // Check if app is already running in standalone/installed mode
+    if (typeof window !== "undefined") {
+      const isDisplayStandalone = window.matchMedia('(display-mode: standalone)').matches;
+      const isiOSStandalone = (window.navigator as any).standalone === true;
+      setIsStandalone(isDisplayStandalone || isiOSStandalone);
+    }
+
+    // Register Service Worker for PWA
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('/sw.js')
+        .catch(err => console.error('Service worker registration failed:', err));
+    }
+
+    // Listen for the PWA beforeinstallprompt event
+    const handleBeforeInstallPrompt = (e: any) => {
+      e.preventDefault();
+      setDeferredPrompt(e);
+    };
+    window.addEventListener("beforeinstallprompt", handleBeforeInstallPrompt);
+
+    return () => window.removeEventListener("beforeinstallprompt", handleBeforeInstallPrompt);
+  }, []);
 
   useEffect(() => {
     fetch("/api/system")
@@ -82,12 +108,10 @@ export default function ReceptionDashboard() {
     if (!ticketRef.current || !ticket) return;
     setDownloading(true);
     try {
-      const canvas = await html2canvas(ticketRef.current, {
+      const imgData = await toPng(ticketRef.current, {
         backgroundColor: "#ffffff",
-        scale: 3,
-        useCORS: true,
+        pixelRatio: 3, 
       });
-      const imgData = canvas.toDataURL("image/png");
       const pdf = new jsPDF({
         orientation: "portrait",
         unit: "mm",
@@ -98,6 +122,9 @@ export default function ReceptionDashboard() {
       const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
       pdf.addImage(imgData, "PNG", 0, 0, pdfWidth, pdfHeight);
       pdf.save(`SmartOPD-Parcha-${ticket.token}.pdf`);
+    } catch (error) {
+      console.error("Failed to generate PDF", error);
+      alert("Something went wrong while generating the receipt.");
     } finally {
       setDownloading(false);
     }
@@ -106,6 +133,19 @@ export default function ReceptionDashboard() {
   const trackerUrl = typeof window !== "undefined" && ticket
     ? `${window.location.origin}/p/${ticket.id}`
     : "";
+
+  const handleInstallClick = async () => {
+    if (deferredPrompt) {
+      deferredPrompt.prompt();
+      const { outcome } = await deferredPrompt.userChoice;
+      if (outcome === "accepted") {
+        setDeferredPrompt(null);
+        setIsStandalone(true);
+      }
+    } else {
+      alert("To install this app, tap your browser's menu (⋮ or ⬆️) and select 'Add to Home Screen' or 'Install App'.");
+    }
+  };
 
   return (
     <div className="min-h-screen relative text-zinc-100 flex flex-col overflow-hidden">
@@ -135,7 +175,19 @@ export default function ReceptionDashboard() {
         
         {/* Left Side: Form */}
         <div className="w-full lg:max-w-md">
-          <h1 className="text-2xl font-bold tracking-tight mb-1">Patient Registration</h1>
+          <div className="flex items-center justify-between mb-1">
+            <h1 className="text-2xl font-bold tracking-tight">Patient Registration</h1>
+            {!isStandalone && (
+              <button 
+                onClick={handleInstallClick}
+                className="bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-3 py-1.5 rounded-lg text-xs font-bold flex items-center gap-2 hover:bg-emerald-500/20 transition-colors"
+                title="Install SmartOPD"
+              >
+                <Download className="w-3.5 h-3.5" />
+                Install App
+              </button>
+            )}
+          </div>
           <p className="text-zinc-500 text-[14px] mb-8">Generate a digital parcha and assign a token instantly.</p>
 
           <form onSubmit={handleGenerateParcha} className="bg-[#111113] border border-[#27272a] rounded-2xl p-6 shadow-xl">
@@ -213,7 +265,9 @@ export default function ReceptionDashboard() {
                   {/* Header Band */}
                   <div className="bg-black text-white px-6 py-4 flex items-center justify-between">
                     <div className="flex items-center gap-2">
-                      <Activity className="w-5 h-5" />
+                       <div className="w-6 h-6 rounded overflow-hidden">
+                         <img src="/logo.png" alt="Logo" className="w-full h-full object-cover" />
+                       </div>
                       <span className="font-black text-lg">SmartOPD</span>
                     </div>
                     <span className="text-[11px] opacity-60 uppercase tracking-widest">Digital Parcha</span>
@@ -257,7 +311,7 @@ export default function ReceptionDashboard() {
                   <div className="px-6 py-5 flex items-center justify-between gap-4">
                     <div>
                       <p className="text-[11px] font-bold uppercase tracking-widest text-gray-400 mb-2">Scan to Track Live</p>
-                      <QRCodeSVG
+                      <QRCodeCanvas
                         value={trackerUrl || `https://smartopd.in/p/${ticket.id}`}
                         size={90}
                         level="H"

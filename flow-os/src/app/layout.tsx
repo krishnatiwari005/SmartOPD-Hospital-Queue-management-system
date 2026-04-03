@@ -18,6 +18,7 @@ export const metadata: Metadata = {
   description:
     "SmartOPD eliminates hospital waiting chaos. Real-time token tracking, ML-driven ETAs, and smart doctor consoles for modern healthcare.",
   keywords: ["hospital queue", "OPD", "token system", "SmartOPD", "patient tracker", "doctor console"],
+  manifest: "/manifest.json",
 };
 
 export default function RootLayout({

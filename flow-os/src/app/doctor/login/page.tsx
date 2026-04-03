@@ -60,8 +60,8 @@ export default function DoctorLoginPage() {
       <div className="w-full max-w-md relative z-10">
         {/* Logo Section */}
         <div className="flex flex-col items-center mb-10">
-          <div className="w-16 h-16 rounded-2xl bg-emerald-500/10 flex items-center justify-center mb-4 border border-emerald-500/20 shadow-[0_0_20px_rgba(16,185,129,0.1)]">
-            <Activity className="w-10 h-10 text-emerald-500" />
+          <div className="w-20 h-20 rounded-2xl overflow-hidden mb-4 border border-[#27272a] shadow-[0_0_30px_rgba(16,185,129,0.2)] bg-black">
+            <img src="/logo.png" alt="SmartOPD Hospital Logo" className="w-full h-full object-cover" />
           </div>
           <h1 className="text-3xl font-black tracking-tighter text-white">SmartOPD</h1>
           <p className="text-zinc-500 text-sm mt-2 font-medium">Official Doctor Portal Login</p>

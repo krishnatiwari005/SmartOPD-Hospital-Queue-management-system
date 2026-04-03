@@ -25,9 +25,11 @@ export default function SmartNavbar({ active, badge, extra }: SmartNavbarProps) 
       {/* 🟢 TOP NAV (Branding & Extra) */}
       <nav className="border-b border-[#1e1e22] px-4 md:px-6 py-4 flex items-center justify-between bg-[#09090b]/90 backdrop-blur-xl sticky top-0 z-50">
         <div className="flex items-center gap-3">
-          <Link href="/" className="flex items-center gap-2 group">
-            <Activity className="w-5 h-5 text-emerald-500" />
-            <span className="text-[17px] font-black tracking-tight text-white">SmartOPD</span>
+          <Link href="/" className="flex items-center gap-2.5 group">
+            <div className="w-8 h-8 rounded-lg overflow-hidden border border-[#27272a] shadow-[0_0_15px_rgba(16,185,129,0.15)] bg-black flex items-center justify-center">
+              <img src="/logo.png" alt="SmartOPD" className="w-full h-full object-cover" />
+            </div>
+            <span className="text-[17px] font-black tracking-tight text-white group-hover:text-emerald-400 transition-colors">SmartOPD</span>
           </Link>
 
           {badge && (
