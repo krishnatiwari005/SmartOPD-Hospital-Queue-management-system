@@ -26,6 +26,8 @@ export const metadata: Metadata = {
   },
 };
 
+import AIChatBot from "@/components/AIChatBot";
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -57,6 +59,7 @@ export default function RootLayout({
       </head>
       <body className="min-h-full flex-col bg-[#09090b] text-zinc-100 flex">
         {children}
+        <AIChatBot />
         {/* Register Service Worker for PWA Notifications */}
         <script
           dangerouslySetInnerHTML={{

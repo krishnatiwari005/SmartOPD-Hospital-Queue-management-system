@@ -370,3 +370,13 @@ export async function getSystemState() {
   const { data: patients } = await supabaseAdmin.from("patients").select("*");
   return { doctors, patients };
 }
+
+/**
+ * 📊 AI INSIGHTS & LEARNING
+ */
+
+export async function getHospitalInsights() {
+  const { getLatestInsights } = await import("./insights-engine");
+  return await getLatestInsights();
+}
+
