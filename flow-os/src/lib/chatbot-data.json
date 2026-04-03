@@ -1,0 +1,45 @@
+{
+  "GREETING": [
+    "hi", "hello", "hey", "hola", "greetings", "good morning", "good afternoon", "good evening",
+    "namaste", "pranam", "kya haal hai", "kaise hain", "sab theek"
+  ],
+  "CHECK_STATUS": [
+    "my status", "my turn", "wait time", "kab ayega", "kitna time lagega", "mera token", "appointment status",
+    "position ahead", "queue status", "how much longer", "mera turn kab hai", "intezar kitna karna hai"
+  ],
+  "FIND_PHARMACY": [
+    "pharmacy", "medicine", "drug", "chemist", "medical store", "dawai", "dawakhana", "medicine kidhar milegi",
+    "where is pharmacy", "pharmacy kaha hai", "dawai ki dukan", "medical shop"
+  ],
+  "FIND_ROOM": [
+    "room", "cabin", "where is doc", "cabin", "hall", "floor", "doctor kaha baithte hain", "kis room me jana hai",
+    "doctor room", "cabin number", "consultation room", "kamra number", "kaha jana hai"
+  ],
+  "LAB_REPORTS": [
+    "lab", "report", "test", "blood", "pathology", "collect", "report kab milegi", "blood test kaha hota hai",
+    "test ki report", "pathology lab", "medical reports", "xray", "ultrasound"
+  ],
+  "NAV_FACILITIES": [
+    "washroom", "toilet", "restroom", "water", "drinking water", "shauchalay", "paani kaha hai", "bathroom",
+    "lift", "stairs", "parking", "entry", "exit", "where are toilets", "paani peene ki jagah"
+  ],
+  "TRIAGE_LOGIC": [
+    "triage", "priority", "critical", "urgent", "how works", "ai", "machine learning", "itne der kyu ho rhi",
+    "emergency cases first", "prioritization", "how you sorted", "why I am waiting", "line kyu badal rhi"
+  ],
+  "SKIP_POLICY": [
+    "skip", "missed", "not there", "absent", "miss ho gaya", "turn chala gaya", "skipped symptoms",
+    "what to do if missed", "token skip ho gaya", "ab kya karein"
+  ],
+  "EMERGENCY": [
+    "help", "emergency", "serious", "pain", "doctor now", "dying", "accident", "dard ho rha", "seedhi choth",
+    "danger", "bleeding", "severe", "hard to breathe", "seene me dard", "bohot zyada dard", "stomach pain"
+  ],
+  "SYSTEM_INFO": [
+    "who are you", "what is this", "smartopd", "bot", "assistant", "kaun ho tum", "kya kaam karte ho",
+    "digital system", "smart opd", "app help"
+  ],
+  "THANKS": [
+    "thank", "thanks", "ok", "okay", "understand", "cool", "shukriya", "dhanyawad", "theek hai", "ji"
+  ]
+}

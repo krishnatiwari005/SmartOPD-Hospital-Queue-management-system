@@ -37,51 +37,75 @@ export default function AIChatBot() {
   }, [messages, isTyping]);
 
   const getSmartResponse = async (query: string): Promise<string> => {
-    const q = query.toLowerCase();
+    const q = query.toLowerCase().trim();
 
-    // 1. Context-Aware Queries (Needs Patient ID)
-    if (patientId && (q.includes("my status") || q.includes("my turn") || q.includes("wait time"))) {
-      try {
-        const res = await fetch(`/api/patient/${patientId}`);
-        const json = await res.json();
-        if (json.success) {
-          const { liveTracking, doctor, patient } = json.data;
-          return `Hi ${patient.name}, you are currently at position #${liveTracking.peopleAhead + 1} for ${doctor.name}. Estimated wait is around ${liveTracking.estimatedWaitMins} minutes.`;
+    // Helper to check if any keyword in an array is present in the query
+    const matches = (keywords: string[]) => keywords.some(k => q.includes(k));
+
+    // 1. GREETINGS
+    if (matches(["hi", "hello", "hey", "hola", "greetings", "good morning", "good afternoon", "good evening"])) {
+      return "Hello! I'm your SmartOPD Assistant. I can help you check your wait time, find the pharmacy, or explain how our AI triage works. What's on your mind?";
+    }
+
+    // 2. LIVE STATUS & WAIT TIME (Context Aware)
+    if (matches(["status", "turn", "wait", "time", "queue", "ahead", "position", "token"])) {
+      if (patientId) {
+        try {
+          const res = await fetch(`/api/patient/${patientId}`);
+          const json = await res.json();
+          if (json.success) {
+            const { liveTracking, doctor, patient } = json.data;
+            return `Hi ${patient.name}! You are currently at position #${liveTracking.peopleAhead + 1} for ${doctor.name}. Our ML predicts your turn will come in approximately ${liveTracking.estimatedWaitMins} minutes.`;
+          }
+        } catch (e) {
+          console.error("Chatbot fetching status error:", e);
         }
-      } catch {
-        return "I'm having trouble fetching your live status right now, but you can see it on your dashboard!";
       }
+      
+      // Fallback if no patientId or fetch fails, use Insights if available
+      if (insights) {
+        return `The current system-wide average wait time is ${insights.avgWaitTimeMins} minutes. ${insights.todayPatientsCount > 0 ? `We have served ${insights.todayPatientsCount} patients today.` : ""}`;
+      }
+      
+      return "I can check your specific wait time if you are on your live tracking page. Generally, our wait times are between 10-20 minutes depending on the department.";
     }
 
-    // 2. Learned Hospital Insights (Self-Learning Logic)
-    if (q.includes("busy") || q.includes("crowd") || q.includes("how is hospital") || q.includes("traffic")) {
-      if (!insights) return "The hospital is operating normally today. Most departments have a standard wait time of 10-15 minutes.";
-      return `Today, we have served ${insights.todayPatientsCount} patients so far. The busiest department is ${insights.busiestDepartment}, while ${insights.fastestDepartment} is moving the fastest!`;
+    // 3. HOSPITAL NAVIGATION
+    if (matches(["pharmacy", "medicine", "drug", "chemist", "medical store"])) {
+      return "The pharmacy is on the Ground Floor, near the exit. It operates 24/7 for all patients.";
+    }
+    if (matches(["room", "cabin", "where is doc", "cabin", "hall", "floor"])) {
+      return "Most consultation rooms (Cabins) are on the 1st Floor. Your specific cabin number is printed on your digital receipt (Parcha).";
+    }
+    if (matches(["lab", "report", "test", "blood", "pathology", "collect"])) {
+      return "The Pathology Lab is on the 1st Floor (East Wing). Reports are usually ready within 4-6 hours for most tests.";
+    }
+    if (matches(["washroom", "toilet", "restroom", "water"])) {
+      return "Restrooms and drinking water stations are available at the end of every corridor on each floor.";
     }
 
-    if (q.includes("fast") || q.includes("quick")) {
-      if (!insights) return "Wait times vary by department, but we aim for under 15 minutes per consultation.";
-      return `Currently, ${insights.fastestDepartment} is the most efficient department today. ${insights.efficiencyGain > 0 ? `Overall efficiency is up by ${insights.efficiencyGain}%!` : ""}`;
+    // 4. SMARTOPD / AI PROCEDURES
+    if (matches(["triage", "priority", "critical", "urgent", "how works", "ai", "machine learning"])) {
+      return "Our AI Assistant analyzes symptoms to prioritize cases. Critical/Emergency cases are moved to the front of the queue to ensure safety. This is why some tokens might move faster than others.";
+    }
+    if (matches(["skip", "missed", "not there", "absent"])) {
+      return "If you aren't present when called, you are 'skipped' and moved to the end of the current queue. You won't lose your registration, but you'll have to wait for the next cycle.";
     }
 
-    if (q.includes("average wait") || q.includes("long")) {
-      if (!insights) return "Average wait time is roughly 10-15 minutes across all departments.";
-      return `The current average consultation duration across all departments is ${insights.avgWaitTimeMins} minutes today.`;
+    // 5. HELP / EMERGENCY
+    if (matches(["help", "emergency", "serious", "pain", "doctor now", "dying", "accident"])) {
+      return "🔴 EMERGENCY: If you have severe pain or a life-threatening emergency, please DO NOT WAIT. Inform the nearest staff member IMMEDIATELY or go to the Emergency Wing on the Ground Floor!";
     }
 
-    // 3. Hospital General FAQ Logic
-    if (q.includes("pharmacy") || q.includes("medicine")) return "The pharmacy is located on the Ground Floor, right next to the main exit. It's open 24/7.";
-    if (q.includes("report") || q.includes("lab")) return "Laboratory reports can be collected from the Pathology department on the 1st Floor between 9 AM and 5 PM.";
-    if (q.includes("triage") || q.includes("priority")) return "Our AI analyzes symptoms to prioritize critical cases. Critical patients are seen first to ensure safety, even if they arrived later.";
-    if (q.includes("missed") || q.includes("skip")) return "If you miss your turn, our 'Smart Skip' logic moves you to the end of the queue rather than deleting you. You'll get another chance soon!";
-    if (q.includes("room")) return "Most consultation rooms are on the 1st and 2nd floors. Check your digital parcha for your specific room number.";
-    if (q.includes("emergency") || q.includes("help")) return "If this is a medical emergency, please alert the nearest staff member immediately or head to the Emergency Room at the East Wing.";
+    // 6. ADVICE / SYSTEM INFO
+    if (matches(["who are you", "what is this", "smartopd", "bot"])) {
+      return "I'm the SmartOPD Digital Assistant. I help patients navigate the hospital, track their tokens, and understand our AI-driven queue system for a better experience.";
+    }
+    if (matches(["thank", "thanks", "ok", "okay", "understand", "cool"])) {
+      return "You're welcome! Please let me know if you have any other questions. Stay healthy!";
+    }
 
-    // 3. Greeting & Generic
-    if (q.includes("hello") || q.includes("hi")) return "Hello! I'm here to answer any questions about your visit or SmartOPD procedures.";
-    if (q.includes("thank")) return "You're very welcome! I'm here if you need anything else.";
-
-    return "I'm sorry, I didn't quite understand that. You can ask about your 'wait time', 'pharmacy location', 'triage logic', or 'collecting reports'.";
+    return "I'm sorry, I didn't quite catch that. You can ask me things like: 'Where is the pharmacy?', 'What is my wait time?', 'How does triage work?', or 'What should I do if I missed my turn?'";
   };
 
   const handleSend = async () => {
@@ -92,18 +116,30 @@ export default function AIChatBot() {
     setMessages(prev => [...prev, { role: "user", text: userMsg }]);
     
     setIsTyping(true);
-    // Mimic thinking time
-    setTimeout(async () => {
-      const botResponse = await getSmartResponse(userMsg);
-      setMessages(prev => [...prev, { role: "bot", text: botResponse }]);
+    try {
+      const res = await fetch("/api/ai/chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ message: userMsg, patientId }),
+      });
+      const data = await res.json();
+      
+      if (data.success) {
+        setMessages(prev => [...prev, { role: "bot", text: data.response }]);
+      } else {
+        setMessages(prev => [...prev, { role: "bot", text: "I'm having trouble thinking clearly. Please try again in a moment." }]);
+      }
+    } catch (e) {
+      setMessages(prev => [...prev, { role: "bot", text: "Something went wrong. Please check your connection." }]);
+    } finally {
       setIsTyping(false);
-    }, 800 + Math.random() * 1000);
+    }
   };
 
   const suggestions = [
-    { text: "My Wait Time", icon: Clock },
-    { text: "Pharmacy Location", icon: MapPin },
-    { text: "Triage Logic", icon: Info },
+    { text: "My Wait Time / Kab ayega?", icon: Clock },
+    { text: "Pharmacy / Dawai?", icon: MapPin },
+    { text: "Triage / Kyu der ho rhi?", icon: Info },
   ];
 
   return (
