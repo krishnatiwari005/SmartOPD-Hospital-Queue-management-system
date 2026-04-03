@@ -1,7 +1,7 @@
 "use client";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Activity, Mail, Lock, User, Stethoscope, DoorOpen, ArrowRight, CheckCircle2 } from "lucide-react";
+import { Activity, Mail, Lock, User, Stethoscope, DoorOpen, ArrowRight, ArrowLeft, CheckCircle2 } from "lucide-react";
 import Link from "next/link";
 import LaserFlow from "@/components/LaserFlow";
 
@@ -97,13 +97,22 @@ export default function DoctorRegisterPage() {
                 </div>
               </div>
 
-              <button
-                onClick={() => (formData.name && formData.email) && setStep(2)}
-                disabled={!formData.name || !formData.email}
-                className="w-full btn-primary py-4 text-[15px] font-black flex items-center justify-center gap-2 mt-4 disabled:opacity-50"
-              >
-                Next Step <ArrowRight className="w-5 h-5" />
-              </button>
+              <div className="flex gap-4 mt-4">
+                <button
+                  type="button"
+                  onClick={() => router.push("/")}
+                  className="px-5 py-4 rounded-xl border border-[#27272a] hover:bg-zinc-900 transition-all font-bold text-zinc-400 flex items-center gap-2"
+                >
+                  <ArrowLeft className="w-4 h-4" /> Back
+                </button>
+                <button
+                  onClick={() => (formData.name && formData.email) && setStep(2)}
+                  disabled={!formData.name || !formData.email}
+                  className="flex-1 btn-primary py-4 text-[15px] font-black flex items-center justify-center gap-2 disabled:opacity-50"
+                >
+                  Next Step <ArrowRight className="w-5 h-5" />
+                </button>
+              </div>
             </div>
           )}
 
