@@ -260,38 +260,18 @@ export default function AIChatBot() {
           whileHover={{ scale: 1.1, rotate: 5 }}
           whileTap={{ scale: 0.9 }}
           onClick={() => setIsOpen(!isOpen)}
-          className={`w-16 h-16 rounded-2xl flex items-center justify-center shadow-2xl relative transition-all duration-500 backdrop-blur-2xl border-2 ${
-            isOpen 
-              ? "bg-white border-white text-black rotate-90 rounded-full" 
-              : "bg-emerald-500/10 border-emerald-500/30 text-emerald-400"
-          }`}
+          className="w-16 h-16 rounded-2xl flex items-center justify-center shadow-2xl relative transition-all duration-500 backdrop-blur-2xl border-2 bg-emerald-500/10 border-emerald-500/30 text-emerald-400"
         >
-          {/* Glowing Pulse Rings (Only when closed) */}
-          {!isOpen && (
-            <>
-              <div className="absolute inset-0 rounded-2xl bg-emerald-500/20 animate-ping opacity-75" />
-              <div className="absolute inset-0 rounded-2xl bg-emerald-500/10 animate-pulse" />
-            </>
-          )}
+          {/* Glowing Pulse Rings */}
+          <div className="absolute inset-0 rounded-2xl bg-emerald-500/20 animate-ping opacity-75" />
+          <div className="absolute inset-0 rounded-2xl bg-emerald-500/10 animate-pulse" />
 
-          <AnimatePresence mode="wait">
-            {isOpen ? (
-              <motion.div key="x" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
-                <X className="w-8 h-8" />
-              </motion.div>
-            ) : (
-              <motion.div key="bot" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="relative z-10">
-                <Bot className="w-8 h-8" />
-                <div className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 border-2 border-black rounded-full shadow-lg"></div>
-              </motion.div>
-            )}
-          </AnimatePresence>
+          <div className="relative z-10">
+            <Bot className="w-8 h-8" />
+            <div className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 border-2 border-black rounded-full shadow-lg"></div>
+          </div>
 
-          {!isOpen && (
-              <div className="absolute -top-12 right-0 bg-[#09090b]/80 backdrop-blur-md border border-white/10 text-[10px] text-emerald-400 py-2 px-4 rounded-full whitespace-nowrap shadow-xl pointer-events-none uppercase font-black tracking-widest flex items-center gap-2">
-                  <Sparkles className="w-3.5 h-3.5" /> ASK AI
-              </div>
-          )}
+
         </motion.button>
       </div>
     </>
